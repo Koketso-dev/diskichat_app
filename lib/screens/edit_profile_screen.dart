@@ -62,17 +62,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = authProvider.user;
     if (user == null) return;
 
-    // 1. Select Country
-    final countryResult = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const CountrySelectionScreen(),
-      ),
-    );
-
-    if (countryResult == null || countryResult is! Country) return;
-
-    // 2. Select Team from Country
+    // Direct to Team Selection (No Country Category)
     if (!mounted) return;
     final teamResult = await Navigator.push(
       context,
@@ -81,7 +71,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           userId: user.uid,
           subscriptionType: 'FREE', // Or fetch actual subscription if available
           currentFollowCount: 0, 
-          countryName: countryResult.name,
+          // countryName argument removed (null) implies "All Teams"
         ),
       ),
     );

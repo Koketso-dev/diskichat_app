@@ -18,7 +18,7 @@ class LineupModel {
   factory LineupModel.fromJson(Map<String, dynamic> json) {
     return LineupModel(
       fixtureId: json['fixture_id'] ?? 0,
-      teamId: json['team_id'] ?? 0,
+      teamId: json['team'] != null ? json['team']['id'] : (json['team_id'] ?? 0),
       formation: json['formation'] ?? '',
       startXI: (json['startXI'] as List<dynamic>?)
           ?.map((e) => Player.fromJson(e))

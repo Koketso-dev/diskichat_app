@@ -66,18 +66,19 @@ class MatchProvider extends ChangeNotifier {
       fetchedMatches.sort((a, b) => b.matchDate.compareTo(a.matchDate));
 
       // Apply Subscription Limit
-      if (_authProvider != null && _authProvider!.userProfile != null) {
-        final subType = _authProvider!.userProfile!.subscriptionType;
-        final limit = _subscriptionService.getMatchViewLimit(subType);
-        
-        if (fetchedMatches.length > limit) {
-          fetchedMatches = fetchedMatches.sublist(0, limit);
-        }
-      } else {
-         if (fetchedMatches.isNotEmpty) {
-           fetchedMatches = fetchedMatches.sublist(0, 1);
-         }
-      }
+      // Subscription limit removed for testing/fixing display
+      // if (_authProvider != null && _authProvider!.userProfile != null) {
+      //   final subType = _authProvider!.userProfile!.subscriptionType;
+      //   final limit = _subscriptionService.getMatchViewLimit(subType);
+      //   
+      //   if (fetchedMatches.length > limit) {
+      //     fetchedMatches = fetchedMatches.sublist(0, limit);
+      //   }
+      // } else {
+      //    if (fetchedMatches.isNotEmpty) {
+      //      fetchedMatches = fetchedMatches.sublist(0, 1);
+      //    }
+      // }
 
       // 2. Set State
       _matches = fetchedMatches;

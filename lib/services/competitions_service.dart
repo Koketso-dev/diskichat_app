@@ -23,19 +23,15 @@ class League {
 
 class CompetitionsService {
   Future<List<League>> getCompetitions() async {
-    try {
-      final response = await http.get(Uri.parse('${ApiConstants.baseUrl}/api/competitions')); 
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          final List<dynamic> list = data['competitions'];
-          return list.map((json) => League.fromJson(json)).toList();
-        }
-      }
-      return [];
-    } catch (e) {
-      throw Exception('Error fetching competitions: $e');
-    }
+    // Static return for PSL (League 288) since we are moving to local/firestore
+    // and this is the main focus for now.
+    return [
+      League(
+        id: 288,
+        name: 'Premier Soccer League',
+        logo: 'https://media.api-sports.io/football/leagues/288.png',
+        country: 'South Africa',
+      ),
+    ];
   }
 }

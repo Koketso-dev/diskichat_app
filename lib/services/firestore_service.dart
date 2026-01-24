@@ -4,6 +4,7 @@ import '../data/models/message_model.dart';
 import '../data/models/post_model.dart';
 import '../data/models/comment_model.dart';
 import '../data/models/feedback_model.dart';
+import '../data/models/lineup_model.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -25,8 +26,7 @@ class FirestoreService {
   // Get live matches
   Stream<List<MatchModel>> getLiveMatches() {
     return _firestore
-        .collection('matches')
-        .where('status', isEqualTo: 'live')
+        .collection('live_matches')
         .orderBy('matchDate', descending: false)
         .snapshots()
         .map((snapshot) => snapshot.docs
@@ -76,6 +76,24 @@ class FirestoreService {
     await _firestore.collection('matches').doc(match.id).set(match.toMap());
   }
 
+  // Get Lineups from Match Document
+  Future<List<LineupModel>> getLineups(String matchId) async {
+    try {
+      final doc = await _firestore.collection('matches').doc(matchId).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        if (data.containsKey('lineups')) {
+          final List<dynamic> lineupsJson = data['lineups'];
+          return lineupsJson.map((json) => LineupModel.fromJson(json as Map<String, dynamic>)).toList();
+        }
+      }
+      return [];
+    } catch (e) {
+      print('Error fetching lineups: $e');
+      return [];
+    }
+  }
+
   // Update match score
   Future<void> updateMatchScore(String matchId, int homeScore, int awayScore) async {
     await _firestore.collection('matches').doc(matchId).update({
@@ -98,7 +116,7 @@ class FirestoreService {
   // Get messages for a match
   Stream<List<MessageModel>> getMatchMessages(String matchId, {int limit = 50}) {
     return _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .orderBy('createdAt', descending: true)
@@ -114,7 +132,7 @@ class FirestoreService {
   // Send message
   Future<void> sendMessage(String matchId, MessageModel message) async {
     await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(message.id)
@@ -124,7 +142,7 @@ class FirestoreService {
   // Update message votes
   Future<void> updateMessageVotes(String matchId, String messageId, int votes) async {
     await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(messageId)
@@ -133,7 +151,30 @@ class FirestoreService {
     });
   }
 
-  // Vote on message (Deprecated - Keeping for backward compatibility if needed, but reactions are preferred)
+  // Update message content
+  Future<void> updateMessage(String matchId, String messageId, String newContent) async {
+    await _firestore
+        .collection('banter_rooms')
+        .doc(matchId)
+        .collection('messages')
+        .doc(messageId)
+        .update({
+      'message': newContent,
+      'isEdited': true, // Optional flag to show (edited)
+    });
+  }
+
+  // Delete message
+  Future<void> deleteMessage(String matchId, String messageId) async {
+    await _firestore
+        .collection('banter_rooms')
+        .doc(matchId)
+        .collection('messages')
+        .doc(messageId)
+        .delete();
+  }
+
+  // Vote on message (Legacy)
   Future<void> voteMessage({
     required String matchId,
     required String messageId,
@@ -142,7 +183,7 @@ class FirestoreService {
   }) async {
     // ... existing implementation ...
      final voteRef = _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(messageId)
@@ -182,7 +223,7 @@ class FirestoreService {
     required String emoji,
   }) async {
     final messageRef = _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(messageId);
@@ -209,7 +250,7 @@ class FirestoreService {
 
   Future<void> _updateVoteCount(String matchId, String messageId, int change) async {
     await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(messageId)
@@ -222,7 +263,7 @@ class FirestoreService {
   Future<String?> getUserVote(String matchId, String messageId, String userId) async {
      // ... existing implementation ...
     final voteDoc = await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('messages')
         .doc(messageId)
@@ -244,7 +285,7 @@ class FirestoreService {
   // Join room
   Future<void> joinRoom(String matchId, String userId, {bool checkLimit = true}) async {
     final activeUsersRef = _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('activeUsers');
 
@@ -268,7 +309,7 @@ class FirestoreService {
   // Update last active
   Future<void> updateLastActive(String matchId, String userId) async {
     await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('activeUsers')
         .doc(userId)
@@ -280,7 +321,7 @@ class FirestoreService {
   // Leave room
   Future<void> leaveRoom(String matchId, String userId) async {
     await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('activeUsers')
         .doc(userId)
@@ -290,7 +331,7 @@ class FirestoreService {
   // Get active users count
   Stream<int> getActiveUsersCount(String matchId) {
     return _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('activeUsers')
         .snapshots()
@@ -302,7 +343,7 @@ class FirestoreService {
     final fiveMinutesAgo = DateTime.now().subtract(const Duration(minutes: 5));
 
     final snapshot = await _firestore
-        .collection('matches')
+        .collection('banter_rooms')
         .doc(matchId)
         .collection('activeUsers')
         .where('lastActive', isLessThan: Timestamp.fromDate(fiveMinutesAgo))

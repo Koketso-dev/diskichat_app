@@ -95,7 +95,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Future<void> _loadLineups() async {
     setState(() => _isLoadingLineups = true);
     try {
-      final lineups = await _apiService.getLineups(widget.match.id);
+      final lineups = await _firestoreService.getLineups(widget.match.id);
       if (mounted) {
         setState(() => _lineups = lineups);
       }
@@ -373,7 +373,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   Widget _buildMessageItem(MessageModel msg, bool isMe) {
     return GestureDetector(
-      onLongPress: () => _showReactionPicker(msg),
+      onLongPress: () => _showMessageOptions(msg, isMe),
       child: Padding(
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
@@ -522,7 +522,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }).toList();
   }
 
-  void _showReactionPicker(MessageModel msg) {
+  void _showMessageOptions(MessageModel msg, bool isMe) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -531,27 +531,127 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         margin: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: AppColors.cardSurface,
-          borderRadius: BorderRadius.circular(30),
+          borderRadius: BorderRadius.circular(20),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: ['👍', '❤️', '😂', '😮', '😢', '😡'].map((emoji) {
-            return GestureDetector(
-              onTap: () {
-                context.read<ChatProvider>().toggleReaction(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Reactions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: ['👍', '❤️', '😂', '😮', '😢', '😡'].map((emoji) {
+                return GestureDetector(
+                  onTap: () {
+                    context.read<ChatProvider>().toggleReaction(
+                      matchId: widget.match.id,
+                      messageId: msg.id,
+                      emoji: emoji,
+                    );
+                    Navigator.pop(context);
+                  },
+                  child: Text(
+                    emoji,
+                    style: const TextStyle(fontSize: 28),
+                  ),
+                );
+              }).toList(),
+            ),
+            
+            if (isMe) ...[
+              const SizedBox(height: 16),
+              const Divider(color: AppColors.textGray),
+              
+              // Edit Option
+              ListTile(
+                leading: const Icon(Icons.edit, color: AppColors.accentBlue),
+                title: const Text('Edit Message', style: TextStyle(color: AppColors.textWhite)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showEditDialog(msg);
+                },
+              ),
+              
+              // Delete Option
+              ListTile(
+                leading: const Icon(Icons.delete, color: AppColors.errorRed),
+                title: const Text('Delete Message', style: TextStyle(color: AppColors.textWhite)),
+                onTap: () {
+                  Navigator.pop(context);
+                  _confirmDelete(msg);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showEditDialog(MessageModel msg) {
+    final editController = TextEditingController(text: msg.message);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text('Edit Message', style: TextStyle(color: AppColors.textWhite)),
+        content: TextField(
+          controller: editController,
+          style: const TextStyle(color: AppColors.textWhite),
+          decoration: const InputDecoration(
+            hintText: 'Enter new message',
+            hintStyle: TextStyle(color: AppColors.textGray),
+            enabledBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.textGray)),
+            focusedBorder: UnderlineInputBorder(borderSide: BorderSide(color: AppColors.accentBlue)),
+          ),
+          autofocus: true,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textGray)),
+          ),
+          TextButton(
+            onPressed: () {
+              final newText = editController.text.trim();
+              if (newText.isNotEmpty && newText != msg.message) {
+                context.read<ChatProvider>().editMessage(
                   matchId: widget.match.id,
                   messageId: msg.id,
-                  emoji: emoji,
+                  newContent: newText,
                 );
-                Navigator.pop(context);
-              },
-              child: Text(
-                emoji,
-                style: const TextStyle(fontSize: 28),
-              ),
-            );
-          }).toList(),
-        ),
+              }
+              Navigator.pop(context);
+            },
+            child: const Text('Save', style: TextStyle(color: AppColors.accentBlue)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(MessageModel msg) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.cardSurface,
+        title: const Text('Delete Message', style: TextStyle(color: AppColors.textWhite)),
+        content: const Text('Are you sure you want to delete this message?', style: TextStyle(color: AppColors.textGray)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel', style: TextStyle(color: AppColors.textGray)),
+          ),
+          TextButton(
+            onPressed: () {
+              context.read<ChatProvider>().deleteMessage(
+                matchId: widget.match.id,
+                messageId: msg.id,
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Delete', style: TextStyle(color: AppColors.errorRed)),
+          ),
+        ],
       ),
     );
   }

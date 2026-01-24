@@ -1,23 +1,29 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../utils/constants/api_constants.dart';
-import '../data/models/team_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FollowService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   // Get User Follows (and subscription status)
   Future<Map<String, dynamic>> getUserFollows(String userId) async {
     try {
-      final response = await http.get(
-        Uri.parse('${ApiConstants.baseUrl}/api/follows/$userId'),
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          return data['data'];
-        }
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      if (userDoc.exists) {
+        final data = userDoc.data() ?? {};
+        // Return structured data similar to what the API returned, or what app expects
+        // App expects 'data' which usually contains 'followingTeams' (list of IDs) and 'subscription'
+        
+        return {
+          'followingTeams': data['followingTeams'] ?? [],
+          'followingLeagues': data['followingLeagues'] ?? [],
+          'subscription': data['subscriptionType'] ?? 'FREE', // Fallback
+          // Add other fields if app uses them from this specific call
+        };
       }
-      throw Exception('Failed to load follows');
+      return {
+        'followingTeams': [],
+        'followingLeagues': [],
+        'subscription': 'FREE',
+      };
     } catch (e) {
       throw Exception('Error fetching follows: $e');
     }
@@ -26,17 +32,14 @@ class FollowService {
   // Follow Team
   Future<void> followTeam(String userId, int teamId) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/api/follows/team'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': userId, 'teamId': teamId}),
-      );
-
-      if (response.statusCode != 201) {
-        final data = json.decode(response.body);
-        throw Exception(data['message'] ?? 'Failed to follow team');
-      }
+      await _firestore.collection('users').doc(userId).update({
+        'followingTeams': FieldValue.arrayUnion([teamId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
+      // If doc doesn't exist (edge case), set it
+      // But user should exist. If update fails, rethrow.
+      print("Error following team: $e");
       rethrow;
     }
   }
@@ -44,35 +47,25 @@ class FollowService {
   // Unfollow Team
   Future<void> unfollowTeam(String userId, int teamId) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/api/follows/team/unfollow'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': userId, 'teamId': teamId}),
-      );
-
-      if (response.statusCode != 200) {
-        throw Exception('Failed to unfollow team');
-      }
+      await _firestore.collection('users').doc(userId).update({
+        'followingTeams': FieldValue.arrayRemove([teamId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
-      throw Exception('Error unfollowing team: $e');
+       print("Error unfollowing team: $e");
+       rethrow;
     }
   }
 
   // Follow League
   Future<void> followLeague(String userId, int leagueId) async {
     try {
-      final response = await http.post(
-        Uri.parse('${ApiConstants.baseUrl}/api/follows/league'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({'userId': userId, 'leagueId': leagueId}),
-      );
-
-      if (response.statusCode != 201) {
-        final data = json.decode(response.body);
-        throw Exception(data['message'] ?? 'Failed to follow league');
-      }
+       await _firestore.collection('users').doc(userId).update({
+        'followingLeagues': FieldValue.arrayUnion([leagueId]),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
     } catch (e) {
-      rethrow;
+       rethrow;
     }
   }
 }

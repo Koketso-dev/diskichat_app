@@ -121,7 +121,7 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
       appBar: AppBar(
-         title: Text(widget.countryName != null ? 'Teams in ${widget.countryName}' : 'Follow a Team'),
+         title: const Text('Select Team'),
         backgroundColor: AppColors.primaryDark,
       ),
       body: _isLoading
@@ -133,9 +133,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
                     children: [
                       const Icon(Icons.sports_soccer, size: 64, color: AppColors.textMuted),
                       const SizedBox(height: 16),
-                      Text(
-                        'No teams found for ${widget.countryName ?? 'selection'}',
-                        style: const TextStyle(color: AppColors.textMuted),
+                      const Text(
+                        'No teams found',
+                        style: TextStyle(color: AppColors.textMuted),
                       ),
                     ],
                   ),

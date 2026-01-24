@@ -1,8 +1,11 @@
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/foundation.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class AnalyticsService {
   final FirebaseAnalytics _analytics = FirebaseAnalytics.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   Future<void> logEvent({
     required String name,
@@ -31,6 +34,29 @@ class AnalyticsService {
   }
 
   Future<void> logUpgradeClick({String? fromScreen}) async {
+    // Log to Firebase Analytics
     await logEvent(name: 'upgrade_click', parameters: {'source': fromScreen ?? 'unknown'});
+    
+    // Log to Firestore for Admin Dashboard
+    try {
+      final docRef = _firestore.collection('metrics').doc('subscription_clicks');
+      await _firestore.runTransaction((transaction) async {
+         final snapshot = await transaction.get(docRef);
+         if (!snapshot.exists) {
+           transaction.set(docRef, {
+             'count': 1,
+             'updatedAt': FieldValue.serverTimestamp(),
+           });
+         } else {
+           final newCount = (snapshot.data()?['count'] ?? 0) + 1;
+           transaction.update(docRef, {
+             'count': newCount,
+             'updatedAt': FieldValue.serverTimestamp(),
+           });
+         }
+      });
+    } catch (e) {
+      debugPrint('Analytics: Failed to increment subscription clicks in Firestore: $e');
+    }
   }
 }

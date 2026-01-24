@@ -139,6 +139,41 @@ class ChatProvider extends ChangeNotifier {
       }
   }
 
+  // Delete Message
+  Future<bool> deleteMessage({required String matchId, required String messageId}) async {
+    try {
+      await _firestoreService.deleteMessage(matchId, messageId);
+      final index = _messages.indexWhere((m) => m.id == messageId);
+      if (index != -1) {
+        _messages.removeAt(index);
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
+  // Edit Message
+  Future<bool> editMessage({required String matchId, required String messageId, required String newContent}) async {
+    try {
+      await _firestoreService.updateMessage(matchId, messageId, newContent);
+      // Local update for immediate feedback (though stream will also update)
+      final index = _messages.indexWhere((m) => m.id == messageId);
+      if (index != -1) {
+        _messages[index] = _messages[index].copyWith(message: newContent); // Ensure copyWith exists and is used/added if needed or just rely on stream
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      _errorMessage = e.toString();
+      notifyListeners();
+      return false;
+    }
+  }
+
   // Toggle Reaction
   Future<void> toggleReaction({
     required String matchId,

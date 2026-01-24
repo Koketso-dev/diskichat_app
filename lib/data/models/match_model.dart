@@ -53,7 +53,7 @@ class MatchModel {
   factory MatchModel.fromMap(Map<String, dynamic> map) {
     return MatchModel(
       id: map['id'] ?? '',
-      competitionId: map['competitionId'],
+      competitionId: map['competitionId']?.toString(),
       competitionName: map['competitionName'] ?? 'Football',
       homeTeamId: map['homeTeamId'], // Int usually
       homeTeam: map['homeTeam'] ?? '',
