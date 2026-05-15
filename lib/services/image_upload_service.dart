@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
 class ImageUploadService {
@@ -10,22 +11,18 @@ class ImageUploadService {
 
   Future<String> uploadImage(File file, {String folder = 'posts'}) async {
     try {
-      // 1. Compress Image
       final compressedFile = await _compressImage(file);
-      final File uploadFile = compressedFile ?? file; // Fallback to original
+      final File uploadFile = compressedFile ?? file;
 
       final String fileName = '${_uuid.v4()}.jpg';
       final Reference ref = _storage.ref().child(folder).child(fileName);
 
-      final UploadTask uploadTask = ref.putFile(
+      final TaskSnapshot snapshot = await ref.putFile(
         uploadFile,
         SettableMetadata(contentType: 'image/jpeg'),
       );
 
-      final TaskSnapshot snapshot = await uploadTask;
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
-      
-      return downloadUrl;
+      return await snapshot.ref.getDownloadURL();
     } catch (e) {
       throw Exception('Failed to upload image: $e');
     }
@@ -36,15 +33,12 @@ class ImageUploadService {
       final String fileName = '${_uuid.v4()}.mp4';
       final Reference ref = _storage.ref().child(folder).child(fileName);
 
-      final UploadTask uploadTask = ref.putFile(
+      final TaskSnapshot snapshot = await ref.putFile(
         file,
         SettableMetadata(contentType: 'video/mp4'),
       );
 
-      final TaskSnapshot snapshot = await uploadTask;
-      final String downloadUrl = await snapshot.ref.getDownloadURL();
-      
-      return downloadUrl;
+      return await snapshot.ref.getDownloadURL();
     } catch (e) {
       throw Exception('Failed to upload video: $e');
     }
@@ -52,20 +46,18 @@ class ImageUploadService {
 
   Future<File?> _compressImage(File file) async {
     try {
-      final String targetPath = '${file.parent.path}/${_uuid.v4()}_compressed.jpg';
-      
-      var result = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path, 
+      final dir = await getTemporaryDirectory();
+      final String targetPath = '${dir.path}/${_uuid.v4()}_compressed.jpg';
+
+      final result = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
         targetPath,
         quality: 70,
         minWidth: 1080,
         minHeight: 1080,
       );
 
-      if (result != null) {
-        return File(result.path);
-      }
-      return null;
+      return result != null ? File(result.path) : null;
     } catch (e) {
       debugPrint("Image compression failed: $e");
       return null;

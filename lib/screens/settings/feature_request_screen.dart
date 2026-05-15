@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 import '../../services/firestore_service.dart';
 import '../../data/models/feedback_model.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../components/buttons/gradient_button.dart';
 import '../../components/inputs/custom_text_field.dart';
 import '../../providers/auth_provider.dart';
-import 'package:provider/provider.dart';
 
 class FeatureRequestScreen extends StatefulWidget {
   const FeatureRequestScreen({super.key});
@@ -18,7 +19,7 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
   final _formKey = GlobalKey<FormState>();
   final _descriptionController = TextEditingController();
   final _firestoreService = FirestoreService();
-  
+
   String _selectedType = 'Feature Request';
   bool _isLoading = false;
 
@@ -43,9 +44,9 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
     try {
       final user = Provider.of<AuthProvider>(context, listen: false).user;
       final profile = Provider.of<AuthProvider>(context, listen: false).userProfile;
-      
+
       final feedback = FeedbackModel(
-        id: '', // Firestore generates
+        id: '',
         userId: user?.uid ?? 'anonymous',
         username: profile?.username ?? user?.displayName ?? 'Anonymous',
         userEmail: user?.email ?? 'No Email',
@@ -53,7 +54,7 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
         description: _descriptionController.text.trim(),
         createdAt: DateTime.now(),
       );
-      
+
       await _firestoreService.submitFeedback(feedback);
 
       if (mounted) {
@@ -63,15 +64,12 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
             backgroundColor: AppColors.successGreen,
           ),
         );
-        Navigator.pop(context);
+        context.pop();
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: AppColors.errorRed,
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.errorRed),
         );
       }
     } finally {
@@ -83,9 +81,7 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
-      appBar: AppBar(
-        title: const Text('FEEDBACK & REQUESTS'), // Uppercase as requested
-      ),
+      appBar: AppBar(title: const Text('FEEDBACK & REQUESTS')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Form(
@@ -94,8 +90,6 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const SizedBox(height: 24),
-              
-              // Type Dropdown
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 decoration: BoxDecoration(
@@ -110,43 +104,27 @@ class _FeatureRequestScreenState extends State<FeatureRequestScreen> {
                     style: const TextStyle(color: AppColors.textWhite),
                     isExpanded: true,
                     items: _typeOptions.entries.map((entry) {
-                      return DropdownMenuItem(
-                        value: entry.key,
-                        child: Text(entry.value),
-                      );
+                      return DropdownMenuItem(value: entry.key, child: Text(entry.value));
                     }).toList(),
                     onChanged: (value) {
-                      if (value != null) {
-                        setState(() => _selectedType = value);
-                      }
+                      if (value != null) setState(() => _selectedType = value);
                     },
                   ),
                 ),
               ),
-              
               const SizedBox(height: 16),
-              
-              // Description Input
               CustomTextField(
                 controller: _descriptionController,
                 labelText: 'Description',
                 hintText: 'Describe your idea or issue in detail...',
                 maxLines: 6,
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a description';
-                  }
+                  if (value == null || value.trim().isEmpty) return 'Please enter a description';
                   return null;
                 },
               ),
-              
               const SizedBox(height: 32),
-              
-              GradientButton(
-                text: 'SUBMIT FEEDBACK',
-                onPressed: _submit,
-                isLoading: _isLoading,
-              ),
+              GradientButton(text: 'SUBMIT FEEDBACK', onPressed: _submit, isLoading: _isLoading),
             ],
           ),
         ),

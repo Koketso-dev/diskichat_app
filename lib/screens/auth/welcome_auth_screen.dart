@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:delightful_toast/delight_toast.dart';
@@ -10,8 +11,6 @@ import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../components/buttons/gradient_button.dart';
 import '../../components/inputs/custom_text_field.dart';
-import '../profile_setup/profile_wizard_screen.dart';
-import '../home_screen.dart';
 
 class WelcomeAuthScreen extends StatefulWidget {
   const WelcomeAuthScreen({super.key});
@@ -25,7 +24,6 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen> {
 
   void _handleRegistration() async {
     final mobile = _mobileController.text.trim();
-    debugPrint('DEBUG: _handleRegistration called with mobile: $mobile');
 
     if (mobile.length < 10) {
       _showToast("Please enter a valid mobile number", icon: Icons.error);
@@ -33,36 +31,13 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    debugPrint('DEBUG: Calling signInWithMobile...');
     final success = await authProvider.signInWithMobile(mobile);
-    debugPrint('DEBUG: signInWithMobile returned: $success');
 
     if (success) {
-      if (!mounted) {
-        debugPrint('DEBUG: Widget not mounted after login!');
-        return;
-      }
-      
+      if (!mounted) return;
       final profile = authProvider.userProfile;
-      debugPrint('DEBUG: User Profile: $profile');
-      debugPrint('DEBUG: Favorite Team: ${profile?.favoriteTeam}');
-
-      // Check if profile is incomplete (e.g. no favorite team)
-      if (profile?.favoriteTeam == null) {
-        debugPrint('DEBUG: Navigating to ProfileWizardScreen');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ProfileWizardScreen()),
-        );
-      } else {
-        debugPrint('DEBUG: Navigating to HomeScreen');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
-      }
+      context.go(profile?.favoriteTeam == null ? '/profile-setup' : '/home');
     } else {
-      debugPrint('DEBUG: showing error toast: ${authProvider.errorMessage}');
       if (!mounted) return;
       _showToast(authProvider.errorMessage ?? "Login failed", icon: Icons.error);
     }
@@ -98,17 +73,16 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              // Logo
-               Center(
-                  child: SizedBox(
-                    width: 120,
-                    height: 120,
-                    child: Image.asset(
-                      'lib/assets/images/diskichat_icon.png',
-                      color: Colors.white,
-                    ),
+              Center(
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: Image.asset(
+                    'lib/assets/images/diskichat_icon.png',
+                    color: Colors.white,
                   ),
                 ),
+              ),
               const SizedBox(height: 32),
               const Text(
                 'Get Started',
@@ -133,16 +107,10 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen> {
               const SizedBox(height: 24),
 
               if (isLoading)
-                const SpinKitThreeBounce(
-                  color: AppColors.accentBlue,
-                  size: 30.0,
-                )
+                const SpinKitThreeBounce(color: AppColors.accentBlue, size: 30.0)
               else
-                GradientButton(
-                  text: 'Continue',
-                  onPressed: _handleRegistration,
-                ),
-                
+                GradientButton(text: 'Continue', onPressed: _handleRegistration),
+
               const Spacer(flex: 2),
             ],
           ),

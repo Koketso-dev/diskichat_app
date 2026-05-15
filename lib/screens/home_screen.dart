@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import '../../utils/themes/app_colors.dart';
-import '../../utils/themes/text_styles.dart';
+import '../utils/themes/app_colors.dart';
+import '../utils/themes/text_styles.dart';
 import 'matches_screen.dart';
-import 'social/feed_screen.dart'; // Import
-// import 'live_matches_screen.dart'; // Removed
+import 'social/feed_screen.dart';
 import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {

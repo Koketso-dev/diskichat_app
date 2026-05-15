@@ -1,45 +1,34 @@
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import '../../data/models/match_model.dart';
 import '../../providers/chat_provider.dart';
 import '../../services/firestore_service.dart';
-import '../../screens/chat/chat_room_screen.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
-
 import '../../utils/helpers/time_helper.dart';
-import '../../utils/routes.dart';
 import '../avatars/custom_avatar.dart';
-
 
 class MatchCard extends StatelessWidget {
   final MatchModel match;
 
-  const MatchCard({
-    super.key,
-    required this.match,
-  });
+  const MatchCard({super.key, required this.match});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        AppRoutes.navigateTo(
-          context,
-          ChatRoomScreen(match: match),
-        );
-      },
+      onTap: () => context.push('/chat/${match.id}', extra: match),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.cardSurface, // Solid color
+          color: AppColors.cardSurface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withValues(alpha:0.1), // Clear edge
+            color: Colors.white.withValues(alpha: 0.1),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha:0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -51,10 +40,9 @@ class MatchCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                // color: AppColors.cardSurface.withValues(alpha: 0.5), // Removed for solid look
                 border: Border(
                   bottom: BorderSide(
-                    color: Colors.white.withValues(alpha:0.05),
+                    color: Colors.white.withValues(alpha: 0.05),
                     width: 1,
                   ),
                 ),
@@ -65,7 +53,6 @@ class MatchCard extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Competition name
                   Expanded(
                     child: Text(
                       match.competitionName,
@@ -75,14 +62,11 @@ class MatchCard extends StatelessWidget {
                       ),
                     ),
                   ),
-
-                  // Real-time Fan Count Badge
                   StreamBuilder<int>(
                     stream: FirestoreService().getActiveUsersCount(match.id),
                     builder: (context, snapshot) {
                       final count = snapshot.data ?? 0;
                       if (count == 0 && !match.isLive) return const SizedBox.shrink();
-
                       return Container(
                         margin: const EdgeInsets.only(right: 8),
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -107,9 +91,6 @@ class MatchCard extends StatelessWidget {
                       );
                     },
                   ),
-
-                  // Live indicator or time
-                  // Status Banner
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -142,10 +123,8 @@ class MatchCard extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  // Teams and score
                   Row(
                     children: [
-                      // Home team
                       Expanded(
                         child: Column(
                           children: [
@@ -153,9 +132,7 @@ class MatchCard extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               match.homeTeam,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -163,48 +140,34 @@ class MatchCard extends StatelessWidget {
                           ],
                         ),
                       ),
-
-                      // Score
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
                           children: [
                             if (match.isLive || match.isFinished)
-                              Text(
-                                match.scoreDisplay,
-                                style: AppTextStyles.scoreMedium,
-                              )
+                              Text(match.scoreDisplay, style: AppTextStyles.scoreMedium)
                             else
+                              Text('VS', style: AppTextStyles.h3.copyWith(color: AppColors.textMuted)),
+                            if (match.isUpcoming) ...[
+                              const SizedBox(height: 4),
                               Text(
-                                'VS',
-                                style: AppTextStyles.h3.copyWith(
-                                  color: AppColors.textMuted,
+                                TimeHelper.formatMatchTime(match.matchDate),
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: AppColors.accentBlue,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              if (match.isUpcoming) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  TimeHelper.formatMatchTime(match.matchDate),
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.accentBlue,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
+                            ],
                             if (match.isLive || match.isFinished)
                               Text(
                                 match.elapsedTime ?? match.statusDisplay,
                                 style: AppTextStyles.caption.copyWith(
-                                  color: match.isLive
-                                      ? AppColors.liveGreen
-                                      : AppColors.textMuted,
+                                  color: match.isLive ? AppColors.liveGreen : AppColors.textMuted,
                                 ),
                               ),
                           ],
                         ),
                       ),
-
-                      // Away team
                       Expanded(
                         child: Column(
                           children: [
@@ -212,9 +175,7 @@ class MatchCard extends StatelessWidget {
                             const SizedBox(height: 8),
                             Text(
                               match.awayTeam,
-                              style: AppTextStyles.bodyMedium.copyWith(
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppTextStyles.bodyMedium.copyWith(fontWeight: FontWeight.w600),
                               textAlign: TextAlign.center,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -227,11 +188,9 @@ class MatchCard extends StatelessWidget {
 
                   const SizedBox(height: 16),
 
-                  // Join/Resume Button
                   Consumer<ChatProvider>(
                     builder: (context, chatProvider, child) {
                       final isJoined = chatProvider.isJoined(match.id);
-
                       return Container(
                         width: double.infinity,
                         height: 44,
@@ -244,17 +203,11 @@ class MatchCard extends StatelessWidget {
                                       ? AppColors.primaryBlue
                                       : Colors.grey[700],
                           borderRadius: BorderRadius.circular(12),
-                          // No border/gradient for solid button look
                         ),
                         child: Material(
                           color: Colors.transparent,
                           child: InkWell(
-                            onTap: () {
-                              AppRoutes.navigateTo(
-                                context,
-                                ChatRoomScreen(match: match),
-                              );
-                            },
+                            onTap: () => context.push('/chat/${match.id}', extra: match),
                             borderRadius: BorderRadius.circular(12),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -279,11 +232,7 @@ class MatchCard extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.arrow_forward,
-                                  color: AppColors.textWhite,
-                                  size: 18,
-                                ),
+                                const Icon(Icons.arrow_forward, color: AppColors.textWhite, size: 18),
                               ],
                             ),
                           ),
@@ -306,26 +255,14 @@ class MatchCard extends StatelessWidget {
         width: 60,
         height: 60,
         alignment: Alignment.center,
-        child: CustomAvatar(
-          imageUrl: logoUrl,
-          size: 60,
-          placeholder: '',
-        ),
+        child: CustomAvatar(imageUrl: logoUrl, size: 60, placeholder: ''),
       );
     }
-
     return Container(
       width: 60,
       height: 60,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: AppColors.cardSurface,
-      ),
-      child: const Icon(
-        Icons.sports_soccer,
-        color: AppColors.textGray,
-        size: 30,
-      ),
+      decoration: const BoxDecoration(shape: BoxShape.circle, color: AppColors.cardSurface),
+      child: const Icon(Icons.sports_soccer, color: AppColors.textGray, size: 30),
     );
   }
 }

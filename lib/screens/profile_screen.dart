@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../utils/themes/app_colors.dart';
-import '../../utils/themes/text_styles.dart';
-import '../../utils/helpers/rank_helper.dart';
-import '../../utils/constants/rank_constants.dart';
-import '../../utils/routes.dart';
-import '../../services/firestore_service.dart';
-import '../../services/analytics_service.dart';
-import '../../components/badges/rank_badge.dart';
-import '../../components/avatars/custom_avatar.dart';
-import 'edit_profile_screen.dart';
-import 'settings/feature_request_screen.dart';
-import 'settings/help_support_screen.dart';
-import 'settings/about_screen.dart';
+import '../providers/auth_provider.dart';
+import '../utils/themes/app_colors.dart';
+import '../utils/themes/text_styles.dart';
+import '../utils/helpers/rank_helper.dart';
+import '../utils/constants/rank_constants.dart';
+import '../services/firestore_service.dart';
+import '../services/analytics_service.dart';
+import '../components/badges/rank_badge.dart';
+import '../components/avatars/custom_avatar.dart';
 import 'package:share_plus/share_plus.dart';
 
 class ProfileScreen extends StatelessWidget {
@@ -24,15 +20,9 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
       appBar: AppBar(
-        title: Text(
-          'PROFILE',
-          style: AppTextStyles.appBarTitle,
-        ),
+        title: Text('PROFILE', style: AppTextStyles.appBarTitle),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {},
-          ),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
         ],
       ),
       body: Consumer<AuthProvider>(
@@ -45,26 +35,16 @@ class ProfileScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.person_outline,
-                    size: 80,
-                    color: AppColors.textMuted,
-                  ),
+                  const Icon(Icons.person_outline, size: 80, color: AppColors.textMuted),
                   const SizedBox(height: 16),
-                  Text(
-                    'Not logged in',
-                    style: AppTextStyles.h3,
-                  ),
+                  Text('Not logged in', style: AppTextStyles.h3),
                 ],
               ),
             );
           }
 
           final rank = RankHelper.getRankFromString(userProfile.rank);
-          final rankProgress = RankHelper.getRankProgress(
-            userProfile.points,
-            rank,
-          );
+          final rankProgress = RankHelper.getRankProgress(userProfile.points, rank);
           final pointsToNext = RankConstants.getPointsToNextRank(userProfile.points);
 
           return SingleChildScrollView(
@@ -75,11 +55,8 @@ class ProfileScreen extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppColors.primaryBlue,
-                        AppColors.primaryDark,
-                      ],
+                    gradient: const LinearGradient(
+                      colors: [AppColors.primaryBlue, AppColors.primaryDark],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
@@ -87,13 +64,9 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
-                      // Avatar with rank badge
                       Stack(
                         children: [
-                          CustomAvatar(
-                            imageUrl: userProfile.avatarUrl,
-                            size: 100,
-                          ),
+                          CustomAvatar(imageUrl: userProfile.avatarUrl, size: 100),
                           Positioned(
                             bottom: 0,
                             right: 0,
@@ -101,28 +74,14 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 16),
-
-                      // Name
-                      Text(
-                        userProfile.displayName,
-                        style: AppTextStyles.h2,
-                      ),
-
+                      Text(userProfile.displayName, style: AppTextStyles.h2),
                       const SizedBox(height: 4),
-
-                      // Username
                       Text(
                         '@${userProfile.username}',
-                        style: AppTextStyles.bodyMedium.copyWith(
-                          color: AppColors.textGray,
-                        ),
+                        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textGray),
                       ),
-
                       const SizedBox(height: 16),
-
-                      // Points and rank
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -139,10 +98,7 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       const SizedBox(height: 24),
-
-                      // Rank progress
                       if (rank != UserRank.goat) ...[
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,9 +112,7 @@ class ProfileScreen extends StatelessWidget {
                                 ),
                                 Text(
                                   '$pointsToNext Diskis',
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color: AppColors.accentBlue,
-                                  ),
+                                  style: AppTextStyles.bodySmall.copyWith(color: AppColors.accentBlue),
                                 ),
                               ],
                             ),
@@ -168,38 +122,23 @@ class ProfileScreen extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: rankProgress,
                                 minHeight: 8,
-                                backgroundColor: AppColors.textMuted.withValues(alpha:0.2),
-                                valueColor: const AlwaysStoppedAnimation<Color>(
-                                  AppColors.accentBlue,
-                                ),
+                                backgroundColor: AppColors.textMuted.withValues(alpha: 0.2),
+                                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.accentBlue),
                               ),
                             ),
                           ],
                         ),
                       ],
-
                       const SizedBox(height: 24),
-
-                      // Edit Profile Button
                       OutlinedButton.icon(
-                        onPressed: () {
-                          AppRoutes.navigateTo(
-                            context,
-                            const EditProfileScreen(),
-                          );
-                        },
+                        onPressed: () => context.push('/edit-profile'),
                         icon: const Icon(Icons.edit),
                         label: const Text('Edit Profile'),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: AppColors.accentBlue,
                           side: const BorderSide(color: AppColors.accentBlue),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 24,
-                            vertical: 12,
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         ),
                       ),
                     ],
@@ -208,36 +147,20 @@ class ProfileScreen extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // Menu items
                 _buildMenuItem(
                   icon: Icons.feedback,
                   title: 'Feedback',
-                  onTap: () {
-                    AppRoutes.navigateTo(
-                      context,
-                      const FeatureRequestScreen(),
-                    );
-                  },
+                  onTap: () => context.push('/settings/feedback'),
                 ),
                 _buildMenuItem(
                   icon: Icons.help,
                   title: 'Help & Support',
-                  onTap: () {
-                    AppRoutes.navigateTo(
-                      context,
-                      const HelpSupportScreen(),
-                    );
-                  },
+                  onTap: () => context.push('/settings/help'),
                 ),
                 _buildMenuItem(
                   icon: Icons.info,
                   title: 'About',
-                  onTap: () {
-                    AppRoutes.navigateTo(
-                      context,
-                      const AboutScreen(),
-                    );
-                  },
+                  onTap: () => context.push('/settings/about'),
                 ),
                 _buildMenuItem(
                   icon: Icons.share,
@@ -253,23 +176,18 @@ class ProfileScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
-                
-                const SizedBox(height: 24),
-                
+
                 // Subscription Section
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppColors.cardSurface,
-                        AppColors.cardSurface.withValues(alpha:0.8),
-                      ],
+                      colors: [AppColors.cardSurface, AppColors.cardSurface.withValues(alpha: 0.8)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withValues(alpha:0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -281,9 +199,9 @@ class ProfileScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
-                              color: userProfile.subscriptionType == 'premium' 
-                                  ? AppColors.liveGreen.withValues(alpha:0.2)
-                                  : AppColors.textGray.withValues(alpha:0.2),
+                              color: userProfile.subscriptionType == 'premium'
+                                  ? AppColors.liveGreen.withValues(alpha: 0.2)
+                                  : AppColors.textGray.withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: userProfile.subscriptionType == 'premium'
@@ -304,7 +222,6 @@ class ProfileScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      
                       if (userProfile.subscriptionType != 'premium') ...[
                         Text(
                           'Unlock full access to matches and features.',
@@ -351,23 +268,6 @@ class ProfileScreen extends StatelessWidget {
                 ),
 
                 const SizedBox(height: 24),
-
-                // Sign out button
-                // Sign out removed as requested
-                // _buildMenuItem(
-                //   icon: Icons.logout,
-                //   title: 'Sign Out',
-                //   textColor: AppColors.errorRed,
-                //   onTap: () async {
-                //     await authProvider.signOut();
-                //     if (context.mounted) {
-                //       AppRoutes.navigateAndRemoveUntil(
-                //         context,
-                //         const WelcomeAuthScreen(),
-                //       );
-                //     }
-                //   },
-                // ),
               ],
             ),
           );
@@ -376,27 +276,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
+  Widget _buildStatItem({required IconData icon, required String label, required String value}) {
     return Column(
       children: [
-        Icon(
-          icon,
-          color: AppColors.accentBlue,
-          size: 24,
-        ),
+        Icon(icon, color: AppColors.accentBlue, size: 24),
         const SizedBox(height: 4),
-        Text(
-          value,
-          style: AppTextStyles.h3,
-        ),
-        Text(
-          label,
-          style: AppTextStyles.bodySmall,
-        ),
+        Text(value, style: AppTextStyles.h3),
+        Text(label, style: AppTextStyles.bodySmall),
       ],
     );
   }
@@ -411,24 +297,11 @@ class ProfileScreen extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
         onTap: onTap,
-        leading: Icon(
-          icon,
-          color: textColor ?? AppColors.textWhite,
-        ),
-        title: Text(
-          title,
-          style: AppTextStyles.bodyLarge.copyWith(
-            color: textColor ?? AppColors.textWhite,
-          ),
-        ),
-        trailing: const Icon(
-          Icons.chevron_right,
-          color: AppColors.textGray,
-        ),
+        leading: Icon(icon, color: textColor ?? AppColors.textWhite),
+        title: Text(title, style: AppTextStyles.bodyLarge.copyWith(color: textColor ?? AppColors.textWhite)),
+        trailing: const Icon(Icons.chevron_right, color: AppColors.textGray),
         tileColor: AppColors.cardSurface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -441,7 +314,7 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPopular ? AppColors.primaryBlue : Colors.transparent,
           border: Border.all(
-            color: isPopular ? AppColors.primaryBlue : AppColors.textGray.withValues(alpha:0.5),
+            color: isPopular ? AppColors.primaryBlue : AppColors.textGray.withValues(alpha: 0.5),
           ),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -450,11 +323,7 @@ class ProfileScreen extends StatelessWidget {
             if (isPopular) ...[
               Text(
                 'BEST VALUE',
-                style: AppTextStyles.caption.copyWith(
-                  fontSize: 8,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
+                style: AppTextStyles.caption.copyWith(fontSize: 8, fontWeight: FontWeight.bold, color: Colors.white),
               ),
               const SizedBox(height: 4),
             ],
@@ -480,31 +349,21 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showSubscriptionModal(BuildContext context, String plan, String userId) {
-    // Analytics
     AnalyticsService().logUpgradeClick(fromScreen: 'profile_screen');
-
-    // Log the attempt
-    // We create a temporary instance or use a provider if service was provided, 
-    // but creating instance is fine for this lightweight logger.
-    // Ideally use dependency injection or Provider.
-    final firestoreService = FirestoreService(); // Assuming import is available
-    firestoreService.logSubscriptionAttempt(userId, plan);
+    FirestoreService().logSubscriptionAttempt(userId, plan);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardSurface,
-        title: const Text(
-          'Coming Soon!',
-          style: TextStyle(color: AppColors.textWhite),
-        ),
+        title: const Text('Coming Soon!', style: TextStyle(color: AppColors.textWhite)),
         content: const Text(
           'Premium subscriptions are not yet active. Please enjoy the FULL version of Diskichat for FREE for now!',
           style: TextStyle(color: AppColors.textGray),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => context.pop(),
             child: const Text('Awesome!', style: TextStyle(color: AppColors.accentBlue)),
           ),
         ],

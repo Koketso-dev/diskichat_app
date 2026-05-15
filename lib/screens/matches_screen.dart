@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/match_provider.dart';
-import '../../utils/themes/app_colors.dart';
-import '../../utils/themes/text_styles.dart';
-import '../../components/cards/match_card.dart';
-import '../../components/common/loading_indicator.dart';
-import '../../components/common/empty_state.dart';
+import '../providers/match_provider.dart';
+import '../utils/themes/app_colors.dart';
+import '../utils/themes/text_styles.dart';
+import '../components/cards/match_card.dart';
+import '../components/common/loading_indicator.dart';
+import '../components/common/empty_state.dart';
 
 class MatchesScreen extends StatefulWidget {
   const MatchesScreen({super.key});

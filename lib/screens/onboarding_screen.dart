@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../utils/themes/app_colors.dart';
 import '../utils/themes/text_styles.dart';
-import '../utils/routes.dart';
 import '../components/buttons/gradient_button.dart';
 import '../services/storage_service.dart';
 import '../services/analytics_service.dart';
-import 'auth/welcome_auth_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -47,21 +46,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Page Content
           PageView.builder(
             controller: _pageController,
-            onPageChanged: (index) {
-              setState(() {
-                _currentPage = index;
-              });
-            },
+            onPageChanged: (index) => setState(() => _currentPage = index),
             itemCount: _pages.length,
-            itemBuilder: (context, index) {
-              return _buildPage(_pages[index]);
-            },
+            itemBuilder: (context, index) => _buildPage(_pages[index]),
           ),
-          
-          // Skip Button
+
           Positioned(
             top: 50,
             right: 24,
@@ -77,33 +68,20 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
 
-          // Bottom Controls
           Positioned(
             bottom: 40,
             left: 24,
             right: 24,
             child: Column(
               children: [
-                // Dots
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(
-                    _pages.length,
-                    (index) => _buildDot(index),
-                  ),
+                  children: List.generate(_pages.length, _buildDot),
                 ),
                 const SizedBox(height: 32),
-                
-                // Button
                 _currentPage == _pages.length - 1
-                    ? GradientButton(
-                        text: 'Join Diskichat',
-                        onPressed: _goToAuth,
-                      )
-                    : GradientButton(
-                        text: 'Next',
-                        onPressed: _nextPage,
-                      ),
+                    ? GradientButton(text: 'Join Diskichat', onPressed: _goToAuth)
+                    : GradientButton(text: 'Next', onPressed: _nextPage),
               ],
             ),
           ),
@@ -115,35 +93,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildPage(OnboardingPage page) {
     return Column(
       children: [
-        // Image Section (40% Height)
         Expanded(
-            flex: 4,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Image.asset(
-                  page.image,
-                  fit: BoxFit.cover,
-                ),
-                // Gradient Fade to White
-                Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      stops: const [0.5, 1.0], 
-                      colors: [
-                        Colors.transparent,
-                        Colors.white,
-                      ],
-                    ),
+          flex: 4,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.asset(page.image, fit: BoxFit.cover),
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    stops: [0.5, 1.0],
+                    colors: [Colors.transparent, Colors.white],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
         ),
-        
-        // Text Section (60% Height approx, actually remaining space)
         Expanded(
           flex: 6,
           child: Container(
@@ -156,7 +124,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Text(
                   page.title,
                   style: AppTextStyles.h1.copyWith(
-                    color: Colors.black, // Dark text for white background
+                    color: Colors.black,
                     fontSize: 32,
                     height: 1.2,
                   ),
@@ -166,7 +134,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Text(
                   page.description,
                   style: AppTextStyles.bodyLarge.copyWith(
-                    color: Colors.black54, // Darker gray for white background
+                    color: Colors.black54,
                     fontSize: 16,
                   ),
                   textAlign: TextAlign.center,
@@ -188,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         borderRadius: BorderRadius.circular(4),
         color: _currentPage == index
             ? AppColors.accentBlue
-            : AppColors.textGray.withValues(alpha:0.3),
+            : AppColors.textGray.withValues(alpha: 0.3),
       ),
     );
   }
@@ -201,13 +169,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _goToAuth() async {
-    // Analytics
     await AnalyticsService().logSignUp();
-
-    // Mark onboarding as done
     await StorageService().setOnboardingDone(true);
     if (!mounted) return;
-    AppRoutes.navigateReplace(context, const WelcomeAuthScreen());
+    context.go('/auth');
   }
 }
 

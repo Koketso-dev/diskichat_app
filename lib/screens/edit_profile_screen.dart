@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../../utils/themes/app_colors.dart';
-import '../../utils/routes.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import '../../services/image_upload_service.dart';
-import '../../components/buttons/gradient_button.dart';
-import '../../components/inputs/custom_text_field.dart';
-import '../../components/avatars/custom_avatar.dart';
-import 'onboarding/team_selection_screen.dart';
-
+import '../providers/auth_provider.dart';
+import '../utils/themes/app_colors.dart';
+import '../services/image_upload_service.dart';
+import '../components/buttons/gradient_button.dart';
+import '../components/inputs/custom_text_field.dart';
+import '../components/avatars/custom_avatar.dart';
 
 class EditProfileScreen extends StatefulWidget {
   const EditProfileScreen({super.key});
@@ -23,7 +21,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _imageUploadService = ImageUploadService();
   final _picker = ImagePicker();
-  
+
   bool _isUploadingImage = false;
   String? _newAvatarUrl;
   String? _newFavoriteTeamLogo;
@@ -36,9 +34,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final profile = authProvider.userProfile;
-
+    final profile = Provider.of<AuthProvider>(context, listen: false).userProfile;
     _displayNameController = TextEditingController(text: profile?.displayName);
     _usernameController = TextEditingController(text: profile?.username);
     _bioController = TextEditingController(text: profile?.bio);
@@ -56,32 +52,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   Future<void> _selectTeam() async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final user = authProvider.user;
+    final user = Provider.of<AuthProvider>(context, listen: false).user;
     if (user == null) return;
 
-    // Direct to Team Selection (No Country Category)
-    if (!mounted) return;
-    final teamResult = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => TeamSelectionScreen(
-          userId: user.uid,
-          subscriptionType: 'FREE', // Or fetch actual subscription if available
-          currentFollowCount: 0, 
-          // countryName argument removed (null) implies "All Teams"
-        ),
-      ),
-    );
+    final result = await context.push<dynamic>('/team-selection', extra: {
+      'userId': user.uid,
+      'subscriptionType': 'FREE',
+      'currentFollowCount': 0,
+      'countryName': null,
+    });
 
-    if (teamResult != null) {
-      // Result is Team object (dynamic or typed)
-      final teamName = (teamResult as dynamic).name;
-      final teamLogo = (teamResult as dynamic).logo;
-
+    if (result != null) {
       setState(() {
-        _favoriteTeamController.text = teamName;
-        _newFavoriteTeamLogo = teamLogo;
+        _favoriteTeamController.text = (result as dynamic).name as String;
+        _newFavoriteTeamLogo = (result as dynamic).logo as String?;
       });
     }
   }
@@ -90,9 +74,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
-      appBar: AppBar(
-        title: const Text('Edit Profile'),
-      ),
+      appBar: AppBar(title: const Text('Edit Profile')),
       body: Consumer<AuthProvider>(
         builder: (context, authProvider, child) {
           final profile = authProvider.userProfile;
@@ -103,10 +85,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               key: _formKey,
               child: Column(
                 children: [
-                  // Avatar
                   Stack(
                     children: [
-                      // Avatar with loading indicator
                       if (_isUploadingImage)
                         Container(
                           width: 100,
@@ -115,17 +95,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             color: AppColors.cardSurface,
                             shape: BoxShape.circle,
                           ),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                          child: const Center(child: CircularProgressIndicator()),
                         )
                       else
-                        CustomAvatar(
-                          imageUrl: _newAvatarUrl ?? profile?.avatarUrl,
-                          size: 100,
-                        ),
-                      
-                      // Edit button
+                        CustomAvatar(imageUrl: _newAvatarUrl ?? profile?.avatarUrl, size: 100),
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -136,16 +109,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             decoration: BoxDecoration(
                               color: AppColors.accentBlue,
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.primaryDark,
-                                width: 2,
-                              ),
+                              border: Border.all(color: AppColors.primaryDark, width: 2),
                             ),
-                            child: const Icon(
-                              Icons.camera_alt,
-                              color: AppColors.textWhite,
-                              size: 20,
-                            ),
+                            child: const Icon(Icons.camera_alt, color: AppColors.textWhite, size: 20),
                           ),
                         ),
                       ),
@@ -154,27 +120,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   const SizedBox(height: 32),
 
-                  // Display Name
                   CustomTextField(
                     controller: _displayNameController,
                     labelText: 'Display Name',
                     hintText: 'Enter your display name',
                     prefixIcon: Icons.person,
                   ),
-
                   const SizedBox(height: 16),
 
-                  // Username
                   CustomTextField(
                     controller: _usernameController,
                     labelText: 'Username',
                     hintText: 'Enter your username',
                     prefixIcon: Icons.alternate_email,
                   ),
-
                   const SizedBox(height: 16),
 
-                  // Favorite Team - Updated to be ReadOnly and triggering selection
                   GestureDetector(
                     onTap: _selectTeam,
                     child: AbsorbPointer(
@@ -183,15 +144,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         labelText: 'Favorite Team',
                         hintText: 'Select your favorite team',
                         prefixIcon: Icons.sports_soccer,
-                        // readOnly: true, // CustomTextField might not support readOnly prop directly if custom.
-                                          // Using AbsorbPointer + GestureDetector is a safe way.
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 16),
 
-                  // Bio
                   CustomTextField(
                     controller: _bioController,
                     labelText: 'Bio',
@@ -200,10 +157,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     maxLines: 4,
                     maxLength: 150,
                   ),
-
                   const SizedBox(height: 32),
 
-                  // Save button
                   GradientButton(
                     text: 'Save Changes',
                     isLoading: authProvider.isLoading || _isUploadingImage,
@@ -225,21 +180,22 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       displayName: _displayNameController.text.trim(),
       username: _usernameController.text.trim(),
       favoriteTeam: _favoriteTeamController.text.trim(),
-      favoriteTeamLogo: _newFavoriteTeamLogo, // Include new logo
+      favoriteTeamLogo: _newFavoriteTeamLogo,
       bio: _bioController.text.trim(),
       avatarUrl: _newAvatarUrl,
     );
 
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text('Profile updated successfully'),
+        const SnackBar(
+          content: Text('Profile updated successfully'),
           backgroundColor: AppColors.successGreen,
         ),
       );
-      AppRoutes.navigateBack(context);
+      context.pop();
     }
   }
+
   Future<void> _pickAndUploadImage() async {
     try {
       final XFile? image = await _picker.pickImage(
@@ -248,15 +204,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         maxHeight: 1000,
         imageQuality: 75,
       );
-
       if (image == null) return;
 
-      setState(() {
-        _isUploadingImage = true;
-      });
+      setState(() => _isUploadingImage = true);
 
-      final File file = File(image.path);
-      final String downloadUrl = await _imageUploadService.uploadImage(file);
+      final String downloadUrl = await _imageUploadService.uploadImage(File(image.path));
 
       if (mounted) {
         setState(() {
@@ -266,9 +218,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isUploadingImage = false;
-        });
+        setState(() => _isUploadingImage = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error uploading image: $e'),

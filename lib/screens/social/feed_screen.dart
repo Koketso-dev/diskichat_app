@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../services/firestore_service.dart';
 import '../../data/models/post_model.dart';
@@ -8,7 +9,6 @@ import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../components/common/loading_indicator.dart';
 import '../../components/common/empty_state.dart';
-import 'create_post_screen.dart';
 
 class FeedScreen extends StatelessWidget {
   const FeedScreen({super.key});
@@ -33,7 +33,9 @@ class FeedScreen extends StatelessWidget {
           }
 
           if (snapshot.hasError) {
-             return Center(child: Text("Error loading feed: ${snapshot.error}", style: AppTextStyles.body));
+            return Center(
+              child: Text("Error loading feed: ${snapshot.error}", style: AppTextStyles.body),
+            );
           }
 
           final posts = snapshot.data ?? [];
@@ -55,11 +57,10 @@ class FeedScreen extends StatelessWidget {
               return FeedPostCard(
                 post: post,
                 onLike: () async {
-                   final user = context.read<AuthProvider>().user;
-                   if (user != null) {
-                     await firestoreService.likePost(post.id, user.uid);
-                     // Optimistic update if we used a provider, but stream will handle it
-                   }
+                  final user = context.read<AuthProvider>().user;
+                  if (user != null) {
+                    await firestoreService.likePost(post.id, user.uid);
+                  }
                 },
               );
             },
@@ -69,13 +70,7 @@ class FeedScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.accentBlue,
         child: const Icon(Icons.add),
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const CreatePostScreen()),
-          );
-          // Stream automatically updates, no need to refresh manually
-        },
+        onPressed: () => context.push('/create-post'),
       ),
     );
   }

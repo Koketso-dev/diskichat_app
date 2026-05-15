@@ -1,34 +1,30 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../../data/models/match_model.dart';
 import '../../data/models/message_model.dart';
-import '../../data/models/lineup_model.dart'; // Import
+import '../../data/models/lineup_model.dart';
 import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../services/firestore_service.dart'; // Import
+import '../../services/firestore_service.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../utils/themes/gradients.dart';
 import '../../components/inputs/custom_text_field.dart';
 import '../../components/common/loading_indicator.dart';
 import '../../components/common/empty_state.dart';
-import 'tabs/lineup_view.dart'; // Import
-import 'tabs/events_view.dart'; // Import
+import 'tabs/lineup_view.dart';
+import 'tabs/events_view.dart';
 import 'package:image_picker/image_picker.dart';
-import 'video_player_screen.dart'; // Import
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
 
 class ChatRoomScreen extends StatefulWidget {
   final MatchModel match;
 
-  const ChatRoomScreen({
-    super.key,
-    required this.match,
-  });
+  const ChatRoomScreen({super.key, required this.match});
 
   @override
   State<ChatRoomScreen> createState() => _ChatRoomScreenState();
@@ -37,27 +33,24 @@ class ChatRoomScreen extends StatefulWidget {
 class _ChatRoomScreenState extends State<ChatRoomScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  
+
   List<LineupModel> _lineups = [];
   bool _isLoadingLineups = false;
-  late MatchModel _match; // Local state for match (to allow updates)
+  late MatchModel _match;
   Timer? _timer;
   final FirestoreService _firestoreService = FirestoreService();
 
   @override
   void initState() {
     super.initState();
-    _match = widget.match; // Initialize with passed match
+    _match = widget.match;
     _loadLineups();
-    
-    // Auto-refresh match data and lineups every 60s
     _timer = Timer.periodic(const Duration(seconds: 60), (timer) {
       if (mounted) {
         _refreshMatchData();
-        _loadLineups(); // Optional: Refresh lineups too if subs happen
+        _loadLineups();
       }
     });
-    // Load messages and join room
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _joinRoom();
       context.read<ChatProvider>().loadMessages(widget.match.id);
@@ -67,21 +60,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   Future<void> _refreshMatchData() async {
     try {
-      // Fetch single match doc from Firestore
       final docSnapshot = await _firestoreService.firestore
           .collection('matches')
           .doc(widget.match.id)
           .get();
-
       if (docSnapshot.exists && mounted) {
-        final updatedMatch = MatchModel.fromMap(docSnapshot.data()!);
-        // Add ID if missing (fromMap might handle it but being safe)
-        final matchWithId = updatedMatch.copyWith(id: docSnapshot.id);
-        
+        final matchWithId = MatchModel.fromMap(docSnapshot.data()!).copyWith(id: docSnapshot.id);
         if (_match != matchWithId) {
-             setState(() {
-              _match = matchWithId;
-            });
+          setState(() => _match = matchWithId);
         }
       }
     } catch (e) {
@@ -93,15 +79,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     setState(() => _isLoadingLineups = true);
     try {
       final lineups = await _firestoreService.getLineups(widget.match.id);
-      if (mounted) {
-        setState(() => _lineups = lineups);
-      }
+      if (mounted) setState(() => _lineups = lineups);
     } catch (e) {
       debugPrint('Error loading lineups: $e');
     } finally {
-      if (mounted) {
-        setState(() => _isLoadingLineups = false);
-      }
+      if (mounted) setState(() => _isLoadingLineups = false);
     }
   }
 
@@ -119,8 +101,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(ctx); // Close dialog
-                Navigator.pop(context); // Close screen
+                Navigator.pop(ctx);
+                context.pop();
               },
               child: const Text('OK'),
             ),
@@ -132,7 +114,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
   void _leaveRoom() async {
     await context.read<ChatProvider>().leaveRoom(widget.match.id);
-    if (mounted) Navigator.pop(context);
+    if (mounted) context.pop();
   }
 
   @override
@@ -148,8 +130,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     if (text.isEmpty) return;
 
     final chatProvider = context.read<ChatProvider>();
-    
-    // Clear immediately for better UX
     _messageController.clear();
 
     final success = await chatProvider.sendMessage(
@@ -162,15 +142,8 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(chatProvider.errorMessage ?? 'Failed to send message')),
       );
-    } else {
-      // Scroll to bottom
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0, // Lists are often reversed for chat
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
+    } else if (_scrollController.hasClients) {
+      _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     }
   }
 
@@ -185,7 +158,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           elevation: 0,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back, color: AppColors.textWhite),
-            onPressed: () => Navigator.pop(context), // Resume later (keep joined)
+            onPressed: () => context.pop(),
           ),
           title: Text(
             widget.match.competitionName,
@@ -193,7 +166,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           ),
           centerTitle: true,
           actions: [
-            // Live User Count
             Center(
               child: Consumer<ChatProvider>(
                 builder: (_, provider, _) => Padding(
@@ -201,9 +173,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   child: Text(
                     '${provider.activeUsersCount}/100',
                     style: AppTextStyles.caption.copyWith(
-                      color: provider.activeUsersCount >= 100 
-                          ? AppColors.errorRed 
-                          : AppColors.liveGreen,
+                      color: provider.activeUsersCount >= 100 ? AppColors.errorRed : AppColors.liveGreen,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -236,20 +206,15 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             Expanded(
               child: TabBarView(
                 children: [
-                  // Tab 1: Chat (Existing Logic)
                   Column(
                     children: [
                       Expanded(child: _buildMessageList()),
                       _buildMessageInput(),
                     ],
                   ),
-                  
-                  // Tab 2: Line Ups
-                  _isLoadingLineups 
-                      ? const Center(child: LoadingIndicator()) 
+                  _isLoadingLineups
+                      ? const Center(child: LoadingIndicator())
                       : LineupView(lineups: _lineups, match: _match),
-                  
-                  // Tab 3: Events
                   EventsView(match: _match),
                 ],
               ),
@@ -259,7 +224,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       ),
     );
   }
-
 
   Widget _buildMatchHeader() {
     return Container(
@@ -277,7 +241,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          // Home Team
           Expanded(
             child: Text(
               _match.homeTeam,
@@ -285,8 +248,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
               textAlign: TextAlign.right,
             ),
           ),
-          
-          // Score & Time
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 16),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -297,24 +258,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             ),
             child: Column(
               children: [
+                Text(_match.scoreDisplay, style: AppTextStyles.scoreMedium.copyWith(fontSize: 18)),
                 Text(
-                  _match.scoreDisplay,
-                  style: AppTextStyles.scoreMedium.copyWith(fontSize: 18),
+                  _match.isLive && _match.elapsedTime != null
+                      ? "${_match.elapsedTime}'"
+                      : _match.statusDisplay,
+                  style: AppTextStyles.caption.copyWith(
+                    color: _match.isLive ? AppColors.liveGreen : AppColors.textGray,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                Text(
-                _match.isLive && _match.elapsedTime != null 
-                    ? "${_match.elapsedTime}'" 
-                    : _match.statusDisplay,
-                style: AppTextStyles.caption.copyWith(
-                  color: _match.isLive ? AppColors.liveGreen : AppColors.textGray,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
               ],
             ),
           ),
-
-          // Away Team
           Expanded(
             child: Text(
               _match.awayTeam,
@@ -348,12 +304,11 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
           controller: _scrollController,
           padding: const EdgeInsets.all(16),
           itemCount: messages.length,
-          reverse: true, // Chat usually starts from bottom
+          reverse: true,
           itemBuilder: (context, index) {
             final msg = messages[index];
             final currentUser = context.read<AuthProvider>().user;
             final isMe = currentUser != null && msg.userId == currentUser.uid;
-            
             return _buildMessageItem(msg, isMe);
           },
         );
@@ -368,25 +323,24 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         padding: const EdgeInsets.only(bottom: 16),
         child: Row(
           mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.end, // Align to bottom for better bubble look
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             if (!isMe) ...[
-               CircleAvatar(
+              CircleAvatar(
                 backgroundColor: AppColors.textGray,
                 radius: 16,
                 backgroundImage: msg.avatarUrl != null ? NetworkImage(msg.avatarUrl!) : null,
-                child: msg.avatarUrl == null 
-                    ? const Icon(Icons.person, size: 20, color: AppColors.primaryDark) 
+                child: msg.avatarUrl == null
+                    ? const Icon(Icons.person, size: 20, color: AppColors.primaryDark)
                     : null,
               ),
               const SizedBox(width: 8),
             ],
-            
             Flexible(
               child: Column(
                 crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                 children: [
-                   Container(
+                  Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isMe ? AppColors.accentBlue : AppColors.cardSurface,
@@ -411,8 +365,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                               ),
                             ),
                           ),
-                        
-                        // Media Rendering
                         if (msg.imageUrl != null)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 8.0),
@@ -421,26 +373,18 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                               child: CachedNetworkImage(
                                 imageUrl: msg.imageUrl!,
                                 placeholder: (context, url) => const SizedBox(
-                                  height: 150, 
-                                  width: 200, 
-                                  child: Center(child: CircularProgressIndicator())
+                                  height: 150,
+                                  width: 200,
+                                  child: Center(child: CircularProgressIndicator()),
                                 ),
                                 errorWidget: (context, url, error) => const Icon(Icons.error),
                                 fit: BoxFit.cover,
                               ),
                             ),
                           ),
-
                         if (msg.videoUrl != null)
-                           GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => VideoPlayerScreen(videoUrl: msg.videoUrl!),
-                                ),
-                              );
-                            },
+                          GestureDetector(
+                            onTap: () => context.push('/video-player', extra: msg.videoUrl!),
                             child: Padding(
                               padding: const EdgeInsets.only(bottom: 8.0),
                               child: Container(
@@ -451,17 +395,17 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Center(
-                                  child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white.withValues(alpha:0.8)),
+                                  child: Icon(
+                                    Icons.play_circle_fill,
+                                    size: 48,
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-
                         if (msg.message.isNotEmpty)
-                          Text(
-                            msg.message,
-                            style: AppTextStyles.bodyMedium,
-                          ),
+                          Text(msg.message, style: AppTextStyles.bodyMedium),
                         const SizedBox(height: 4),
                         Text(
                           DateFormat('HH:mm').format(msg.createdAt),
@@ -470,15 +414,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                       ],
                     ),
                   ),
-                  
-                  // Reactions Display
                   if (msg.reactions.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
-                      child: Wrap(
-                        spacing: 4,
-                        children: _buildReactionChips(msg),
-                      ),
+                      child: Wrap(spacing: 4, children: _buildReactionChips(msg)),
                     ),
                 ],
               ),
@@ -490,24 +429,19 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   }
 
   List<Widget> _buildReactionChips(MessageModel msg) {
-    // Group reactions by emoji
     final Map<String, int> counts = {};
     for (var emoji in msg.reactions.values) {
       counts[emoji] = (counts[emoji] ?? 0) + 1;
     }
-
     return counts.entries.map((entry) {
       return Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           color: AppColors.cardSurface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.textGray.withValues(alpha:0.3)),
+          border: Border.all(color: AppColors.textGray.withValues(alpha: 0.3)),
         ),
-        child: Text(
-          '${entry.key} ${entry.value}',
-          style: const TextStyle(fontSize: 10, color: AppColors.textWhite),
-        ),
+        child: Text('${entry.key} ${entry.value}', style: const TextStyle(fontSize: 10, color: AppColors.textWhite)),
       );
     }).toList();
   }
@@ -526,7 +460,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Reactions
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: ['👍', '❤️', '😂', '😮', '😢', '😡'].map((emoji) {
@@ -539,19 +472,13 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                     );
                     Navigator.pop(context);
                   },
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 28),
-                  ),
+                  child: Text(emoji, style: const TextStyle(fontSize: 28)),
                 );
               }).toList(),
             ),
-            
             if (isMe) ...[
               const SizedBox(height: 16),
               const Divider(color: AppColors.textGray),
-              
-              // Edit Option
               ListTile(
                 leading: const Icon(Icons.edit, color: AppColors.accentBlue),
                 title: const Text('Edit Message', style: TextStyle(color: AppColors.textWhite)),
@@ -560,8 +487,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                   _showEditDialog(msg);
                 },
               ),
-              
-              // Delete Option
               ListTile(
                 leading: const Icon(Icons.delete, color: AppColors.errorRed),
                 title: const Text('Delete Message', style: TextStyle(color: AppColors.textWhite)),
@@ -625,7 +550,10 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardSurface,
         title: const Text('Delete Message', style: TextStyle(color: AppColors.textWhite)),
-        content: const Text('Are you sure you want to delete this message?', style: TextStyle(color: AppColors.textGray)),
+        content: const Text(
+          'Are you sure you want to delete this message?',
+          style: TextStyle(color: AppColors.textGray),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -695,7 +623,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                 _pickMedia(ImageSource.gallery, false);
               },
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.videocam, color: AppColors.accentBlue),
               title: const Text('Video', style: TextStyle(color: AppColors.textWhite)),
               onTap: () {
@@ -720,7 +648,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   Future<void> _pickMedia(ImageSource source, bool isVideo) async {
     final picker = ImagePicker();
     final XFile? file;
-    
+
     try {
       if (isVideo) {
         file = await picker.pickVideo(source: source);
@@ -730,27 +658,20 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
 
       if (file != null && mounted) {
         final success = await context.read<ChatProvider>().sendMediaMessage(
-          matchId: widget.match.id, 
-          file: File(file.path), 
-          isVideo: isVideo
+          matchId: widget.match.id,
+          file: File(file.path),
+          isVideo: isVideo,
         );
-        
-        if (success && mounted) {
-           if (_scrollController.hasClients) {
-            _scrollController.animateTo(
-              0,
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeOut,
-            );
-          }
+        if (success && mounted && _scrollController.hasClients) {
+          _scrollController.animateTo(0, duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
         }
       }
     } catch (e) {
       debugPrint('Error picking media: $e');
       if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-             SnackBar(content: Text('Error picking media: $e')),
-           );
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error picking media: $e')),
+        );
       }
     }
   }

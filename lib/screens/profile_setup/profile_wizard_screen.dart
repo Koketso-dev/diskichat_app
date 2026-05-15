@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:delightful_toast/delight_toast.dart';
@@ -10,8 +11,6 @@ import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../components/buttons/gradient_button.dart';
 import '../../components/inputs/custom_text_field.dart';
-import '../home_screen.dart';
-import '../onboarding/team_selection_screen.dart';
 
 class ProfileWizardScreen extends StatefulWidget {
   const ProfileWizardScreen({super.key});
@@ -28,12 +27,10 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
 
   void _nextStep() async {
     if (_currentStep == 0) {
-      // Nickname Step
       if (_nicknameController.text.trim().isEmpty) {
         _showToast("Please enter a nickname", icon: Icons.badge);
         return;
       }
-      // Update Profile with Nickname
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final success = await authProvider.updateProfile(
         username: _nicknameController.text.trim(),
@@ -42,30 +39,20 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
         _showToast("Failed to update nickname", icon: Icons.error);
         return;
       }
-      
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
       setState(() => _currentStep = 1);
-      
     } else if (_currentStep == 1) {
-      // Team Step
       if (!_isTeamSelected) {
-         _showToast("Please select a team to follow", icon: Icons.sports_soccer);
-        return; 
+        _showToast("Please select a team to follow", icon: Icons.sports_soccer);
+        return;
       }
-      _finishWizard();
+      context.go('/home');
     }
   }
 
-  void _finishWizard() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
-  }
-  
   void _showToast(String message, {IconData icon = Icons.info}) {
     DelightToastBar(
       builder: (context) => ToastCard(
@@ -91,33 +78,29 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Progress Indicator (2 steps now)
             LinearProgressIndicator(
               value: (_currentStep + 1) / 2,
               backgroundColor: AppColors.cardSurface,
               color: AppColors.accentBlue,
             ),
-            
             Expanded(
               child: PageView(
                 controller: _pageController,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                   _buildNicknameStep(),
+                  _buildNicknameStep(),
                   _buildTeamSelectionStep(),
                 ],
               ),
             ),
-            
-            // Bottom Action Area
             Padding(
               padding: const EdgeInsets.all(24.0),
-              child: isLoading 
-                ? const SpinKitThreeBounce(color: AppColors.accentBlue, size: 30)
-                : GradientButton(
-                    text: _currentStep == 1 ? 'Finish' : 'Next',
-                    onPressed: _nextStep,
-                  ),
+              child: isLoading
+                  ? const SpinKitThreeBounce(color: AppColors.accentBlue, size: 30)
+                  : GradientButton(
+                      text: _currentStep == 1 ? 'Finish' : 'Next',
+                      onPressed: _nextStep,
+                    ),
             ),
           ],
         ),
@@ -135,11 +118,7 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
             children: [
               const Icon(Icons.person_outline, size: 80, color: AppColors.accentBlue),
               const SizedBox(height: 24),
-              const Text(
-                'What should we call you?',
-                style: AppTextStyles.h2,
-                textAlign: TextAlign.center,
-              ),
+              const Text('What should we call you?', style: AppTextStyles.h2, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               const Text(
                 'Choose a unique nickname for the community.',
@@ -161,7 +140,7 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
 
   Widget _buildTeamSelectionStep() {
     final user = Provider.of<AuthProvider>(context, listen: false).user;
-    
+
     return Center(
       child: SingleChildScrollView(
         child: Padding(
@@ -171,15 +150,11 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
             children: [
               Icon(
                 _isTeamSelected ? Icons.check_circle : Icons.shield,
-                size: 80, 
-                color: _isTeamSelected ? AppColors.successGreen : AppColors.accentBlue
+                size: 80,
+                color: _isTeamSelected ? AppColors.successGreen : AppColors.accentBlue,
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Pick your Team',
-                style: AppTextStyles.h2,
-                textAlign: TextAlign.center,
-              ),
+              const Text('Pick your Team', style: AppTextStyles.h2, textAlign: TextAlign.center),
               const SizedBox(height: 16),
               const Text(
                 'Follow your favorite team to get news and match updates.',
@@ -187,34 +162,22 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 48),
-              
               OutlinedButton.icon(
                 onPressed: () async {
                   if (user == null) return;
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TeamSelectionScreen(
-                        userId: user.uid,
-                        subscriptionType: 'FREE', // Default new user
-                        currentFollowCount: 0,
-                        // No country filter
-                      ),
-                    ),
-                  );
-                  
+                  final result = await context.push<dynamic>('/team-selection', extra: {
+                    'userId': user.uid,
+                    'subscriptionType': 'FREE',
+                    'currentFollowCount': 0,
+                    'countryName': null,
+                  });
                   if (result != null) {
                     if (!mounted) return;
-                     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                     
-                     final teamName = (result as dynamic).name;
-                     final teamLogo = (result as dynamic).logo;
-                     
-                     await authProvider.updateProfile(
-                        favoriteTeam: teamName,
-                        favoriteTeamLogo: teamLogo,
-                     );
-                     
+                    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                    await authProvider.updateProfile(
+                      favoriteTeam: (result as dynamic).name as String,
+                      favoriteTeamLogo: (result as dynamic).logo as String?,
+                    );
                     setState(() => _isTeamSelected = true);
                   }
                 },
@@ -226,7 +189,6 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
                 ),
               ),
-              
               if (_isTeamSelected)
                 const Padding(
                   padding: EdgeInsets.only(top: 16.0),

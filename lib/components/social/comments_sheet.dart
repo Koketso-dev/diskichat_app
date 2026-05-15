@@ -70,7 +70,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: MediaQuery.sizeOf(context).height * 0.75,
       decoration: const BoxDecoration(
         color: AppColors.cardSurface,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -188,7 +188,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
 
           // Input
           Container(
-            padding: const EdgeInsets.all(16).copyWith(bottom: MediaQuery.of(context).viewInsets.bottom + 16),
+            padding: const EdgeInsets.all(16).copyWith(bottom: MediaQuery.viewInsetsOf(context).bottom + 16),
             decoration: const BoxDecoration(
               color: AppColors.primaryDark,
               border: Border(top: BorderSide(color: Colors.white10)),
