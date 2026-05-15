@@ -8,7 +8,6 @@ import '../../data/models/lineup_model.dart'; // Import
 import '../../providers/chat_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/firestore_service.dart'; // Import
-import '../../services/api_service.dart'; // Import
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../utils/themes/gradients.dart';
@@ -22,7 +21,6 @@ import 'video_player_screen.dart'; // Import
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:io';
-import '../../utils/constants/app_constants.dart';
 
 class ChatRoomScreen extends StatefulWidget {
   final MatchModel match;
@@ -45,7 +43,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
   late MatchModel _match; // Local state for match (to allow updates)
   Timer? _timer;
   final FirestoreService _firestoreService = FirestoreService();
-  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -133,13 +130,14 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     }
   }
 
-  void _leaveRoom() {
-    context.read<ChatProvider>().leaveRoom(widget.match.id);
-    Navigator.pop(context);
+  void _leaveRoom() async {
+    await context.read<ChatProvider>().leaveRoom(widget.match.id);
+    if (mounted) Navigator.pop(context);
   }
 
   @override
   void dispose() {
+    _timer?.cancel();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -198,7 +196,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
             // Live User Count
             Center(
               child: Consumer<ChatProvider>(
-                builder: (_, provider, __) => Padding(
+                builder: (_, provider, _) => Padding(
                   padding: const EdgeInsets.only(right: 8.0),
                   child: Text(
                     '${provider.activeUsersCount}/100',
@@ -262,14 +260,6 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
     );
   }
 
-  Widget _buildPlaceholderTab(String message) {
-    return Center(
-      child: Text(
-        message,
-        style: AppTextStyles.bodyMedium.copyWith(color: AppColors.textGray),
-      ),
-    );
-  }
 
   Widget _buildMatchHeader() {
     return Container(
@@ -461,7 +451,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
                                   borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Center(
-                                  child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white.withOpacity(0.8)),
+                                  child: Icon(Icons.play_circle_fill, size: 48, color: Colors.white.withValues(alpha:0.8)),
                                 ),
                               ),
                             ),
@@ -512,7 +502,7 @@ class _ChatRoomScreenState extends State<ChatRoomScreen> {
         decoration: BoxDecoration(
           color: AppColors.cardSurface,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppColors.textGray.withOpacity(0.3)),
+          border: Border.all(color: AppColors.textGray.withValues(alpha:0.3)),
         ),
         child: Text(
           '${entry.key} ${entry.value}',

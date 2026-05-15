@@ -203,7 +203,8 @@ class _ProfileWizardScreenState extends State<ProfileWizardScreen> {
                     ),
                   );
                   
-                  if (result != null) { 
+                  if (result != null) {
+                    if (!mounted) return;
                      final authProvider = Provider.of<AuthProvider>(context, listen: false);
                      
                      final teamName = (result as dynamic).name;

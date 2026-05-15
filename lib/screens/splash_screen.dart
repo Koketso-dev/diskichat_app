@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import '../utils/themes/app_colors.dart';
-import '../utils/themes/text_styles.dart';
 import '../utils/routes.dart';
 import '../services/storage_service.dart';
 import 'auth/welcome_auth_screen.dart';

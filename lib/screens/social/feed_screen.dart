@@ -15,7 +15,7 @@ class FeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final FirestoreService _firestoreService = FirestoreService();
+    final FirestoreService firestoreService = FirestoreService();
 
     return Scaffold(
       backgroundColor: AppColors.primaryDark,
@@ -26,7 +26,7 @@ class FeedScreen extends StatelessWidget {
         elevation: 0,
       ),
       body: StreamBuilder<List<PostModel>>(
-        stream: _firestoreService.getFeed(),
+        stream: firestoreService.getFeed(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const LoadingIndicator();
@@ -49,7 +49,7 @@ class FeedScreen extends StatelessWidget {
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: posts.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 16),
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
             itemBuilder: (context, index) {
               final post = posts[index];
               return FeedPostCard(
@@ -57,7 +57,7 @@ class FeedScreen extends StatelessWidget {
                 onLike: () async {
                    final user = context.read<AuthProvider>().user;
                    if (user != null) {
-                     await _firestoreService.likePost(post.id, user.uid);
+                     await firestoreService.likePost(post.id, user.uid);
                      // Optimistic update if we used a provider, but stream will handle it
                    }
                 },
@@ -70,7 +70,7 @@ class FeedScreen extends StatelessWidget {
         backgroundColor: AppColors.accentBlue,
         child: const Icon(Icons.add),
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => const CreatePostScreen()),
           );

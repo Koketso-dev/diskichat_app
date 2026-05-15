@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:uuid/uuid.dart';
 
@@ -66,7 +67,7 @@ class ImageUploadService {
       }
       return null;
     } catch (e) {
-      print("Image compression failed: $e");
+      debugPrint("Image compression failed: $e");
       return null;
     }
   }

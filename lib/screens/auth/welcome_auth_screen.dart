@@ -8,7 +8,6 @@ import 'package:delightful_toast/toast/utils/enums.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
-import '../../utils/themes/gradients.dart';
 import '../../components/buttons/gradient_button.dart';
 import '../../components/inputs/custom_text_field.dart';
 import '../profile_setup/profile_wizard_screen.dart';
@@ -105,8 +104,9 @@ class _WelcomeAuthScreenState extends State<WelcomeAuthScreen> {
                     width: 120,
                     height: 120,
                     child: Image.asset(
+                      'lib/assets/images/diskichat_icon.png',
                       color: Colors.white,
-                        'lib/assets/images/diskichat_icon.png'),
+                    ),
                   ),
                 ),
               const SizedBox(height: 32),

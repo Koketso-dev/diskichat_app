@@ -30,7 +30,6 @@ class _LeagueSelectionScreenState extends State<LeagueSelectionScreen> {
   List<League> _allLeagues = [];
   List<League> _filteredLeagues = [];
   bool _isLoading = true;
-  String? _searchQuery;
 
   @override
   void initState() {
@@ -58,7 +57,6 @@ class _LeagueSelectionScreenState extends State<LeagueSelectionScreen> {
 
   void _filterLeagues(String query) {
     setState(() {
-      _searchQuery = query;
       if (query.isEmpty) {
         _filteredLeagues = _allLeagues;
       } else {

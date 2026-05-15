@@ -10,8 +10,6 @@ import '../../components/buttons/gradient_button.dart';
 import '../../components/inputs/custom_text_field.dart';
 import '../../components/avatars/custom_avatar.dart';
 import 'onboarding/team_selection_screen.dart';
-import 'onboarding/country_selection_screen.dart';
-import '../data/models/country_model.dart';
 
 
 class EditProfileScreen extends StatefulWidget {

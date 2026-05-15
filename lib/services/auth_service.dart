@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../data/models/user_model.dart';
 
 class AuthService {
@@ -88,7 +89,7 @@ class AuthService {
 
       await _firestore.collection('users').doc(userId).set(updates, SetOptions(merge: true));
     } catch (e) {
-      print('Error updating profile: $e');
+      debugPrint('Error updating profile: $e');
       rethrow;
     }
   }
@@ -106,7 +107,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Error getting user profile: $e');
+      debugPrint('Error getting user profile: $e');
       return null;
     }
   }
@@ -119,7 +120,7 @@ class AuthService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-      print('Error updating points: $e');
+      debugPrint('Error updating points: $e');
     }
   }
 
@@ -140,7 +141,7 @@ class AuthService {
         await currentUser?.delete();
       }
     } catch (e) {
-      print('Error deleting account: $e');
+      debugPrint('Error deleting account: $e');
       rethrow;
     }
   }

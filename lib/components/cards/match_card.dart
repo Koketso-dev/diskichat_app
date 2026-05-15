@@ -9,7 +9,6 @@ import '../../utils/themes/text_styles.dart';
 
 import '../../utils/helpers/time_helper.dart';
 import '../../utils/routes.dart';
-import '../badges/live_indicator.dart';
 import '../avatars/custom_avatar.dart';
 
 
@@ -35,12 +34,12 @@ class MatchCard extends StatelessWidget {
           color: AppColors.cardSurface, // Solid color
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Colors.white.withOpacity(0.1), // Clear edge
+            color: Colors.white.withValues(alpha:0.1), // Clear edge
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha:0.3),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -55,7 +54,7 @@ class MatchCard extends StatelessWidget {
                 // color: AppColors.cardSurface.withValues(alpha: 0.5), // Removed for solid look
                 border: Border(
                   bottom: BorderSide(
-                    color: Colors.white.withOpacity(0.05),
+                    color: Colors.white.withValues(alpha:0.05),
                     width: 1,
                   ),
                 ),
@@ -114,18 +113,18 @@ class MatchCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: match.isLive 
-                          ? AppColors.liveGreen 
-                          : match.isUpcoming 
-                              ? AppColors.primaryBlue 
+                      color: match.isLive
+                          ? AppColors.liveGreen
+                          : match.isUpcoming
+                              ? AppColors.primaryBlue
                               : Colors.grey,
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      match.isLive 
-                          ? 'LIVE MATCH' 
-                          : match.isUpcoming 
-                              ? 'PREMATCH' 
+                      match.isLive
+                          ? 'LIVE MATCH'
+                          : match.isUpcoming
+                              ? 'PREMATCH'
                               : 'POSTMATCH',
                       style: AppTextStyles.caption.copyWith(
                         color: Colors.white,
@@ -232,17 +231,17 @@ class MatchCard extends StatelessWidget {
                   Consumer<ChatProvider>(
                     builder: (context, chatProvider, child) {
                       final isJoined = chatProvider.isJoined(match.id);
-                      
+
                       return Container(
                         width: double.infinity,
                         height: 44,
                         decoration: BoxDecoration(
-                          color: isJoined 
-                              ? AppColors.primaryLight 
-                              : match.isLive 
-                                  ? AppColors.liveGreen 
-                                  : match.isUpcoming 
-                                      ? AppColors.primaryBlue 
+                          color: isJoined
+                              ? AppColors.primaryLight
+                              : match.isLive
+                                  ? AppColors.liveGreen
+                                  : match.isUpcoming
+                                      ? AppColors.primaryBlue
                                       : Colors.grey[700],
                           borderRadius: BorderRadius.circular(12),
                           // No border/gradient for solid button look
@@ -267,9 +266,9 @@ class MatchCard extends StatelessWidget {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  isJoined 
-                                      ? 'RESUME MATCH ROOM' 
-                                      : match.isUpcoming 
+                                  isJoined
+                                      ? 'RESUME MATCH ROOM'
+                                      : match.isUpcoming
                                           ? 'JOIN PREMATCH'
                                           : match.isLive
                                               ? 'JOIN LIVE MATCH'

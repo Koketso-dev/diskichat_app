@@ -25,10 +25,10 @@ class QuickReactions extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       decoration: BoxDecoration(
-        color: AppColors.cardSurface.withOpacity(0.5),
+        color: AppColors.cardSurface.withValues(alpha: 0.5),
         border: Border(
           top: BorderSide(
-            color: AppColors.textMuted.withOpacity(0.1),
+            color: AppColors.textMuted.withValues(alpha: 0.1),
           ),
         ),
       ),

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../../providers/match_provider.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import 'matches_screen.dart';
@@ -38,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
           color: AppColors.cardSurface,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha:0.1),
               blurRadius: 8,
               offset: const Offset(0, -2),
             ),

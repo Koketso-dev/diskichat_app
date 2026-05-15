@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class PredictionModel {
   final String matchId;
   final String predictedWinner; // home, away, draw
@@ -25,7 +27,12 @@ class PredictionModel {
       confidence: (map['confidence'] ?? 0.0).toDouble(),
       keyFactors: List<String>.from(map['keyFactors'] ?? []),
       starPlayer: map['starPlayer'],
-      createdAt: DateTime.parse(map['createdAt'] ?? DateTime.now().toIso8601String()),
+      createdAt: () {
+        final raw = map['createdAt'];
+        if (raw == null) return DateTime.now();
+        if (raw is Timestamp) return raw.toDate();
+        return DateTime.tryParse(raw.toString()) ?? DateTime.now();
+      }(),
     );
   }
 

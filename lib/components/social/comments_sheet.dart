@@ -59,7 +59,9 @@ class _CommentsSheetState extends State<CommentsSheet> {
       _commentController.clear();
       FocusManager.instance.primaryFocus?.unfocus(); // Dismiss keyboard
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Error: $e")));
+      }
     } finally {
       if (mounted) setState(() => _isSending = false);
     }
@@ -111,7 +113,7 @@ class _CommentsSheetState extends State<CommentsSheet> {
                  return ListView.separated(
                    padding: const EdgeInsets.all(16),
                    itemCount: comments.length,
-                   separatorBuilder: (_, __) => const SizedBox(height: 16),
+                   separatorBuilder: (_, _) => const SizedBox(height: 16),
                    itemBuilder: (context, index) {
                      final comment = comments[index];
                      return Row(

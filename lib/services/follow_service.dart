@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class FollowService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -39,7 +40,7 @@ class FollowService {
     } catch (e) {
       // If doc doesn't exist (edge case), set it
       // But user should exist. If update fails, rethrow.
-      print("Error following team: $e");
+      debugPrint("Error following team: $e");
       rethrow;
     }
   }
@@ -52,7 +53,7 @@ class FollowService {
         'updatedAt': FieldValue.serverTimestamp(),
       });
     } catch (e) {
-       print("Error unfollowing team: $e");
+       debugPrint("Error unfollowing team: $e");
        rethrow;
     }
   }

@@ -188,7 +188,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         borderRadius: BorderRadius.circular(4),
         color: _currentPage == index
             ? AppColors.accentBlue
-            : AppColors.textGray.withOpacity(0.3),
+            : AppColors.textGray.withValues(alpha:0.3),
       ),
     );
   }

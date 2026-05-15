@@ -11,8 +11,6 @@ class AuthProvider extends ChangeNotifier {
   UserModel? _userProfile;
   bool _isLoading = false;
   String? _errorMessage;
-  String? _verificationId;
-
   // Getters
   User? get user => _user;
   UserModel? get userProfile => _userProfile;
@@ -161,7 +159,6 @@ class AuthProvider extends ChangeNotifier {
 
     _user = null;
     _userProfile = null;
-    _verificationId = null;
     _isLoading = false;
     notifyListeners();
   }

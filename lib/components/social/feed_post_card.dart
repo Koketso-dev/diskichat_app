@@ -3,10 +3,7 @@ import '../../components/avatars/custom_avatar.dart';
 import '../../data/models/post_model.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
-import 'package:intl/intl.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import '../../utils/constants/teams_constants.dart';
-import 'comments_sheet.dart';
 import 'comments_sheet.dart';
 import 'video_post_player.dart';
 import 'package:provider/provider.dart';
@@ -257,21 +254,4 @@ class FeedPostCard extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required Color color,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Row(
-        children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(width: 6),
-          Text(label, style: AppTextStyles.bodySmall.copyWith(color: color)),
-        ],
-      ),
-    );
-  }
 }

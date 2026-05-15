@@ -62,7 +62,7 @@ class CustomAvatar extends StatelessWidget {
         gradient: LinearGradient(
           colors: [
             AppColors.accentBlue,
-            AppColors.accentBlue.withOpacity(0.6),
+            AppColors.accentBlue.withValues(alpha: 0.6),
           ],
         ),
       ),

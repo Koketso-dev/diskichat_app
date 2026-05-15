@@ -15,7 +15,7 @@ class ChatProvider extends ChangeNotifier {
   int _activeUsersCount = 0;
   bool _isLoading = false;
   String? _errorMessage;
-  Map<String, String?> _userVotes = {}; // messageId -> voteType
+  final Map<String, String?> _userVotes = {}; // messageId -> voteType
 
   // Getters
   List<MessageModel> get messages => _messages;
@@ -113,8 +113,6 @@ class ChatProvider extends ChangeNotifier {
 
         if (isVideo) {
              videoUrl = await _imageUploadService.uploadVideo(file, folder: 'chat_media/$matchId');
-             // TODO: Generate thumbnail or use a placeholder
-             // thumbnailUrl = await _generateThumbnail(file); 
         } else {
              imageUrl = await _imageUploadService.uploadImage(file, folder: 'chat_media/$matchId');
         }

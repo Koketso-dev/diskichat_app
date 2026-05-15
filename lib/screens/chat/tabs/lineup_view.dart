@@ -32,16 +32,6 @@ class LineupView extends StatelessWidget {
       );
     }
 
-    // Identify Home and Away lineup
-    // This logic assumes lineup teamId matches match home/away logic. 
-    // Usually name matching is safer if IDs differ between providers, but we'll try order/name.
-    final homeLineup = lineups.firstWhere(
-        (l) => l.teamId.toString() == match.id || true, // Fallback to first if ID mismatch 
-        orElse: () => lineups.first,
-    );
-     // To improve matching, we might need team IDs in MatchModel. For now, let's just display them.
-    // Actually, normally API returns 2 lineups. 0 is usually Home, 1 is Away.
-    
     final home = lineups.isNotEmpty ? lineups[0] : null;
     final away = lineups.length > 1 ? lineups[1] : null;
 
@@ -65,41 +55,45 @@ class LineupView extends StatelessWidget {
             decoration: BoxDecoration(
               color: const Color(0xFF2E7D32), // Grass Green
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+              border: Border.all(color: Colors.white.withValues(alpha:0.5), width: 2),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black.withValues(alpha:0.3),
                   blurRadius: 10,
                   offset: const Offset(0, 5),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                // Pitch Lines (Simplified)
-                Center(
-                  child: Container(
-                    height: 2,
-                    color: Colors.white.withOpacity(0.5),
-                  ),
-                ),
-                Center(
-                  child: Container(
-                    width: 100,
-                    height: 100,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return Stack(
+                  children: [
+                    // Pitch Lines (Simplified)
+                    Center(
+                      child: Container(
+                        height: 2,
+                        color: Colors.white.withValues(alpha:0.5),
+                      ),
                     ),
-                  ),
-                ),
+                    Center(
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white.withValues(alpha:0.5), width: 2),
+                        ),
+                      ),
+                    ),
 
-                // Home Team Players (Top Half)
-                if (home != null) ..._buildPlayers(home.startXI, true),
+                    // Home Team Players (Top Half)
+                    if (home != null) ..._buildPlayers(home.startXI, true, constraints.maxWidth),
 
-                // Away Team Players (Bottom Half)
-                if (away != null) ..._buildPlayers(away.startXI, false),
-              ],
+                    // Away Team Players (Bottom Half)
+                    if (away != null) ..._buildPlayers(away.startXI, false, constraints.maxWidth),
+                  ],
+                );
+              },
             ),
           ),
           
@@ -127,7 +121,7 @@ class LineupView extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildPlayers(List<Player> players, bool isHome) {
+  List<Widget> _buildPlayers(List<Player> players, bool isHome, double containerWidth) {
     List<Widget> playerWidgets = [];
     
     // 1. Parse and Group players by Row
@@ -178,16 +172,8 @@ class LineupView extends StatelessWidget {
 
         playerWidgets.add(Positioned(
           top: y * 600, // 600 is container height
-          left: x * (MediaQueryData.fromView(WidgetsBinding.instance.window).size.width - 64), 
-          // Note: accessing MediaQuery like this in a build method is okay, 
-          // but strictly we should use 'context' or LayoutBuilder constraint. 
-          // Since we are inside SingleChildScrollView, let's assume width is roughly screen width - padding.
-          // Better: Use FractionalTranslation or Alignment if we were inside a Stack of known size.
-          // But here we set 'left' pixels. Let's stick to the relative calculation assuming container width matches screen roughly.
-          // A safer way for 'left' in a Stack is using Alignment, but Positioned works with relative values if enclosed in LayoutBuilder.
-          // For now, let's keep the existing logic:
-          // x is 0.0 to 1.0. We multiply by available width.
-          
+          left: x * containerWidth,
+
           child: FractionalTranslation(
             translation: const Offset(-0.5, -0.5), // Center the widget on the point
             child: Column(
@@ -200,7 +186,7 @@ class LineupView extends StatelessWidget {
                     border: Border.all(color: Colors.white, width: 1.5),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withValues(alpha:0.3),
                         blurRadius: 4,
                       ),
                     ],

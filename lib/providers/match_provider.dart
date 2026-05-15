@@ -1,23 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import '../services/firestore_service.dart';
-import '../services/api_service.dart';
 import '../data/models/match_model.dart';
-import '../services/mock_data_service.dart';
-import '../services/subscription_service.dart';
 import 'auth_provider.dart' as app_auth; // Alias to avoid conflict
 
 class MatchProvider extends ChangeNotifier {
   final FirestoreService _firestoreService = FirestoreService();
-  final ApiService _apiService = ApiService();
-  app_auth.AuthProvider? _authProvider; // Use alias
-  final SubscriptionService _subscriptionService = SubscriptionService();
 
   MatchProvider();
 
   void updateAuth(app_auth.AuthProvider auth) {
-    _authProvider = auth;
     notifyListeners();
   }
 
@@ -103,10 +94,9 @@ class MatchProvider extends ChangeNotifier {
           .get();
 
       if (snapshot.docs.isNotEmpty) {
-        _matchOfTheDay = MatchModel.fromMap(snapshot.docs.first.data());
-        // Add ID if fromMap doesn't extract it from doc ID (it does via 'id' argument usually, but in model it takes map['id'])
-        // Let's ensure ID is correct
-        _matchOfTheDay = MatchModel.fromMap(snapshot.docs.first.data()).copyWith(id: snapshot.docs.first.id);
+        final data = Map<String, dynamic>.from(snapshot.docs.first.data());
+        data['id'] = snapshot.docs.first.id;
+        _matchOfTheDay = MatchModel.fromMap(data);
       } else {
         _matchOfTheDay = null;
       }

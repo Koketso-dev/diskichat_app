@@ -101,6 +101,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         videoUrl = await uploadService.uploadVideo(_selectedVideo!);
       }
 
+    if (!mounted) return;
     final profile = context.read<AuthProvider>().userProfile;
     
     // Fallback info if profile is missing

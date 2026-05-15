@@ -2,12 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../data/models/message_model.dart';
 import '../../providers/chat_provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../utils/themes/app_colors.dart';
 import '../../utils/themes/text_styles.dart';
 import '../../utils/helpers/time_helper.dart';
 import '../../utils/helpers/rank_helper.dart';
-import '../../utils/constants/rank_constants.dart';
 import '../badges/rank_badge.dart';
 import '../avatars/custom_avatar.dart';
 
@@ -113,7 +111,7 @@ class MessageBubble extends StatelessWidget {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.accentBlue.withOpacity(0.2),
+                          color: AppColors.accentBlue.withValues(alpha:0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Row(
@@ -165,7 +163,7 @@ class MessageBubble extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.2) : Colors.transparent,
+          color: isActive ? color.withValues(alpha:0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Icon(
@@ -184,7 +182,7 @@ class MessageBubble extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
-            color: AppColors.cardSurface.withOpacity(0.5),
+            color: AppColors.cardSurface.withValues(alpha:0.5),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Text(
@@ -206,13 +204,13 @@ class MessageBubble extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              AppColors.liveGreen.withOpacity(0.2),
-              AppColors.liveGreen.withOpacity(0.05),
+              AppColors.liveGreen.withValues(alpha:0.2),
+              AppColors.liveGreen.withValues(alpha:0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: AppColors.liveGreen.withOpacity(0.3),
+            color: AppColors.liveGreen.withValues(alpha:0.3),
           ),
         ),
         child: Row(

@@ -11,7 +11,6 @@ import '../../services/analytics_service.dart';
 import '../../components/badges/rank_badge.dart';
 import '../../components/avatars/custom_avatar.dart';
 import 'edit_profile_screen.dart';
-import 'auth/welcome_auth_screen.dart';
 import 'settings/feature_request_screen.dart';
 import 'settings/help_support_screen.dart';
 import 'settings/about_screen.dart';
@@ -32,9 +31,7 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings),
-            onPressed: () {
-              // TODO: Settings screen
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -171,7 +168,7 @@ class ProfileScreen extends StatelessWidget {
                               child: LinearProgressIndicator(
                                 value: rankProgress,
                                 minHeight: 8,
-                                backgroundColor: AppColors.textMuted.withOpacity(0.2),
+                                backgroundColor: AppColors.textMuted.withValues(alpha:0.2),
                                 valueColor: const AlwaysStoppedAnimation<Color>(
                                   AppColors.accentBlue,
                                 ),
@@ -246,9 +243,11 @@ class ProfileScreen extends StatelessWidget {
                   icon: Icons.share,
                   title: 'Invite a Friend',
                   onTap: () {
-                    Share.share(
-                      'Check out Diskichat! The ultimate app for soccer fans. Download it now: https://diskichat.app',
-                      subject: 'Join me on Diskichat!',
+                    SharePlus.instance.share(
+                      ShareParams(
+                        text: 'Check out Diskichat! The ultimate app for soccer fans. Download it now: https://diskichat.app',
+                        subject: 'Join me on Diskichat!',
+                      ),
                     );
                   },
                 ),
@@ -264,13 +263,13 @@ class ProfileScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       colors: [
                         AppColors.cardSurface,
-                        AppColors.cardSurface.withOpacity(0.8),
+                        AppColors.cardSurface.withValues(alpha:0.8),
                       ],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.1)),
+                    border: Border.all(color: Colors.white.withValues(alpha:0.1)),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -283,8 +282,8 @@ class ProfileScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                             decoration: BoxDecoration(
                               color: userProfile.subscriptionType == 'premium' 
-                                  ? AppColors.liveGreen.withOpacity(0.2)
-                                  : AppColors.textGray.withOpacity(0.2),
+                                  ? AppColors.liveGreen.withValues(alpha:0.2)
+                                  : AppColors.textGray.withValues(alpha:0.2),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
                                 color: userProfile.subscriptionType == 'premium'
@@ -442,7 +441,7 @@ class ProfileScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: isPopular ? AppColors.primaryBlue : Colors.transparent,
           border: Border.all(
-            color: isPopular ? AppColors.primaryBlue : AppColors.textGray.withOpacity(0.5),
+            color: isPopular ? AppColors.primaryBlue : AppColors.textGray.withValues(alpha:0.5),
           ),
           borderRadius: BorderRadius.circular(12),
         ),

@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../data/models/team_model.dart';
-import '../data/models/match_model.dart';
 
 class TeamsService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -34,7 +34,7 @@ class TeamsService {
         ..sort((a, b) => a.name.compareTo(b.name));
         
     } catch (e) {
-      print('Error fetching teams from Firestore: $e');
+      debugPrint('Error fetching teams from Firestore: $e');
       return []; 
     }
   }

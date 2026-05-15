@@ -33,7 +33,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
   List<Team> _allTeams = [];
   List<Team> _filteredTeams = [];
   bool _isLoading = true;
-  String? _searchQuery;
 
   @override
   void initState() {
@@ -63,7 +62,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
 
   void _filterTeams(String query) {
     setState(() {
-      _searchQuery = query;
       if (query.isEmpty) {
         _filteredTeams = _allTeams;
       } else {
@@ -110,7 +108,6 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
           ),
-          // TODO: Add Upgrade button
         ],
       ),
     );
@@ -124,9 +121,30 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
          title: const Text('Select Team'),
         backgroundColor: AppColors.primaryDark,
       ),
-      body: _isLoading
-          ? const Center(child: LoadingIndicator())
-          : _filteredTeams.isEmpty 
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              onChanged: _filterTeams,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search teams...',
+                hintStyle: const TextStyle(color: Colors.grey),
+                prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                filled: true,
+                fillColor: AppColors.inputBackground,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: LoadingIndicator())
+                : _filteredTeams.isEmpty 
               ? Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -191,6 +209,9 @@ class _TeamSelectionScreenState extends State<TeamSelectionScreen> {
                     );
                   },
                 ),
+          ),
+        ],
+      ),
     );
   }
 }

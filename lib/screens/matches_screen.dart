@@ -59,9 +59,7 @@ class _MatchesScreenState extends State<MatchesScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Implement search
-            },
+            onPressed: () {},
           ),
         ],
       ),

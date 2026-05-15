@@ -20,7 +20,7 @@ class MessageInput extends StatelessWidget {
         color: AppColors.cardSurface,
         border: Border(
           top: BorderSide(
-            color: AppColors.textMuted.withOpacity(0.2),
+            color: AppColors.textMuted.withValues(alpha: 0.2),
           ),
         ),
       ),
@@ -64,7 +64,7 @@ class MessageInput extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       AppColors.accentBlue,
-                      AppColors.accentBlue.withOpacity(0.7),
+                      AppColors.accentBlue.withValues(alpha: 0.7),
                     ],
                   ),
                   shape: BoxShape.circle,

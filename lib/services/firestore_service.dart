@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../data/models/match_model.dart';
 import '../data/models/message_model.dart';
 import '../data/models/post_model.dart';
@@ -89,7 +90,7 @@ class FirestoreService {
       }
       return [];
     } catch (e) {
-      print('Error fetching lineups: $e');
+      debugPrint('Error fetching lineups: $e');
       return [];
     }
   }

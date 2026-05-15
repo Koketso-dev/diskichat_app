@@ -50,7 +50,7 @@ class _LiveIndicatorState extends State<LiveIndicator>
               width: widget.size,
               height: widget.size,
               decoration: BoxDecoration(
-                color: AppColors.liveGreen.withOpacity(_animation.value),
+                color: AppColors.liveGreen.withValues(alpha: _animation.value),
                 shape: BoxShape.circle,
               ),
             );
